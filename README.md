@@ -1,0 +1,2 @@
+# aoc
+practice for AOC
