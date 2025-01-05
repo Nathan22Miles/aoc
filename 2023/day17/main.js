@@ -468,7 +468,10 @@ class Maze {
 
     dirs = () => {
         let { c } = this
-        return { U: -c, D: c, L: -1, R: 1, ds: [-c, c, -1, 1] }
+        return { U: -c, D: c, L: -1, R: 1, 
+            ds: [-c, c, -1, 1],
+            iU: 0, iD: 1, iL: 2, iR: 3  
+        }
     }
 
     fr = (p) => { return m[p] !== '#' }
@@ -643,7 +646,7 @@ let testData = fs.readFileSync('testData.txt', 'utf8')
 let _m = new Maze(myData, { addBorder: true, borderChar: '#' })
 
 let { m, r, c, fr } = _m
-let { U, D, L, R, ds } = _m.dirs()
+let { U, D, L, R, ds, iU, iD, iL, iR } = _m.dirs()
 let dirNames = ['U', 'D', 'L', 'R']
 
 // log(_m.toString())
@@ -661,7 +664,7 @@ function moveCost(p, d, steps) {
     for (let i = 0; i < steps; i++) {
         _p += d
         cost += parseInt(m[_p])
-        if (!fr(_p)) return [_p, -1]
+        if (!fr(_p)) return [_p, -1] // move is not allowed
     }
     return [_p, cost]
 }
@@ -669,12 +672,12 @@ function moveCost(p, d, steps) {
 // assert(moveCost(16, R, 1).eq([17,4]))
 // assert(moveCost(16, D, 2).eq([16+30, 6]))
 
-function add(p) {
+function addEdge(p) {
     if (!fr(p)) return
 
-    for (let iPrevDir of [0,1,2,3]) {
-        for (let jNextDir of [0,1,2,3]) {
-            if (iPrevDir === jNextDir) continue // cannot jump in same direction again
+    for (let iPrevDir of [iU, iD, iL, iR]) {
+        for (let jNextDir of [iU, iD, iL, iR]) {
+            if (iPrevDir === jNextDir) continue // cannot move in same direction twice
             if (ds[iPrevDir] === -ds[jNextDir]) continue // cannot reverse direction
 
             for (let steps of [1,2,3]) {
@@ -686,16 +689,16 @@ function add(p) {
     }
 }
 
-_m.ps.forEach(p => add(p))
+_m.ps.forEach(p => addEdge(p))
 
 let topLeft = D + R
 let bottomRight = _m.rc2p([r-2, c-2])
 
-g.addEdge('start', nm(topLeft, 1), 0)
-g.addEdge('start', nm(topLeft, 3), 0)
+g.addEdge('start', nm(topLeft, iD), 0)
+g.addEdge('start', nm(topLeft, iR), 0)
 
-g.addEdge(nm(bottomRight, 1), 'goal', 0)
-g.addEdge(nm(bottomRight, 3), 'goal', 0)
+g.addEdge(nm(bottomRight, iD), 'goal', 0)
+g.addEdge(nm(bottomRight, iR), 'goal', 0)
 
 let { totalCost, path, distances } = g.findShortestPath('start', 'goal')
 
@@ -703,8 +706,6 @@ for (let v of path) {
     log(v, distances[v])
 }
 
-log('part1', totalCost) // should be 102
-
-// 638 is right answer (maybe not counting clost of last node?)
+log('part1', totalCost) // should be 102 for testData, 638 for myData
 
 log('done')
