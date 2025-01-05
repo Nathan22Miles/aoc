@@ -672,7 +672,7 @@ function moveCost(p, d, steps) {
 // assert(moveCost(16, R, 1).eq([17,4]))
 // assert(moveCost(16, D, 2).eq([16+30, 6]))
 
-function addEdge(p) {
+function addEdge(p, allowedSteps) {
     if (!fr(p)) return
 
     for (let iPrevDir of [iU, iD, iL, iR]) {
@@ -680,7 +680,7 @@ function addEdge(p) {
             if (iPrevDir === jNextDir) continue // cannot move in same direction twice
             if (ds[iPrevDir] === -ds[jNextDir]) continue // cannot reverse direction
 
-            for (let steps of [1,2,3]) {
+            for (let steps of allowedSteps) {
                 let [_p, cost] = moveCost(p, ds[jNextDir], steps)
                 if (cost < 0) continue
                 g.addEdge(nm(p, iPrevDir), nm(_p, jNextDir), cost)
@@ -689,7 +689,10 @@ function addEdge(p) {
     }
 }
 
-_m.ps.forEach(p => addEdge(p))
+// let allowedSteps = [1,2,3]
+let allowedSteps = [4,5,6,7,8,9,10]
+
+_m.ps.forEach(p => addEdge(p, allowedSteps))
 
 let topLeft = D + R
 let bottomRight = _m.rc2p([r-2, c-2])

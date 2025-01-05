@@ -1,20 +1,18 @@
-// https://adventofcode.com/2023/day/12
-
 const assert = require('assert')
 const fs = require('fs')
 const _ = console.log
 const log = console.log
 
-function pad(x, len=3, cc=' ') { return x.toString().padStart(len, cc) }
+function pad(x, len = 3, cc = ' ') { return x.toString().padStart(len, cc) }
 
-rng = (n, m) => { 
+const rng = (n, m) => {
     if (m === undefined) return Array.from({ length: n }, (_, i) => i)
-    return Array.from({ length: m-n }, (_, i) => i+n) 
+    return Array.from({ length: m - n }, (_, i) => i + n)
 }
 // rngRC = (r, c) => rng(r).flatMap(i => rng(c).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 // rngArr = (arr) => rng(arr.length).flatMap(i => rng(arr[0].length).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 
-sfy = x => JSON.stringify(x)
+const sfy = x => JSON.stringify(x)
 
 // ============ Map extensions ============
 
@@ -64,9 +62,13 @@ Set.prototype._delete = function (arr) { arr.forEach(x => this.delete(x)) }
 
 // ============ Array extensions ============
 
+function parse2D(data) {
+    return data.trim().split('\n').map(row => row.split(''))
+}
+
 Array.prototype.eq = function (arr2) { return this.every((x, i) => x === arr2[i]) }
 Array.prototype.lt = function (arr2) {
-    assert(this.length === arr2.length) 
+    assert(this.length === arr2.length)
     for (let i = 0; i < this.length; i++) {
         if (this[i] > arr2[i]) return false
         if (this[i] < arr2[i]) return true
@@ -110,7 +112,7 @@ Array.prototype.sum = function () { return this.reduce((a, b) => a + b, 0) }
 Array.prototype.avg = function () { return this.reduce((a, b) => a + b, 0) / this.length }
 Array.prototype.mul = function () { return this.reduce((a, b) => a * b, 1) }
 Array.prototype.and = function () { return this.reduce((a, b) => a && b, true) }
-Array.prototype.or  = function () { return this.reduce((a, b) => a || b, false) }
+Array.prototype.or = function () { return this.reduce((a, b) => a || b, false) }
 Array.prototype.min = function () { return this.reduce((a, b) => a < b ? a : b, this[0]) }
 Array.prototype.max = function () { return this.reduce((a, b) => a > b ? a : b, this[0]) }
 Array.prototype.count = function () { return this.filter(x => x).length }
@@ -118,8 +120,8 @@ Array.prototype.toInt = function () { return this.map(x => parseInt(x)) }
 
 Array.prototype.deltas = function () { return this.slice(1).map((value, index) => value - this[index]) }
 
-Array.prototype.shape2 = function (c) { 
-    return Array.from({ length: this.length / c }, (_, i) => this.slice(i * c, (i + 1) * c)) 
+Array.prototype.shape2 = function (c) {
+    return Array.from({ length: this.length / c }, (_, i) => this.slice(i * c, (i + 1) * c))
 }
 
 Array.prototype.log = function (i) {
@@ -129,11 +131,11 @@ Array.prototype.log = function (i) {
     }
 
     log(this.map((x, i) => `${i}: ${sfy(x)}`).join('\n'))
-    
+
     return this
 }
 
-Array.prototype.pairs = function () { 
+Array.prototype.pairs = function () {
     let pairs = []
     for (let i = 0; i < this.length - 1; i++) {
         for (let j = i + 1; j < this.length; j++) {
@@ -141,16 +143,16 @@ Array.prototype.pairs = function () {
         }
     }
     return pairs
- }
+}
 
- Array.prototype.is2D = function () { 
+Array.prototype.is2D = function () {
     if (this.length === 0) return false
-    return this.every(x => Array.isArray(x)) 
+    return this.every(x => Array.isArray(x))
 }
 
 Array.prototype.copy = function () { return this.map(x => Array.isArray(x) ? x.slice() : x) }
 
-Array.prototype.toString = function() { 
+Array.prototype.toString = function () {
     if (this.length === 0) return '[]'
 
     if (this.is2D()) {
@@ -161,13 +163,13 @@ Array.prototype.toString = function() {
     if (text.length > 60) {
         text = this.map((cell, i) => `${pad(i)}  ${sfy(cell)}`).join('\n')
     }
-    
+
     return text
 }
 
- // Following functions assume array is is2D
+// Following functions assume array is is2D
 
-Array.prototype.rcs = function () { 
+Array.prototype.rcs = function () {
     let r = this.length
     let c = this[0].length
     rcs = []
@@ -177,31 +179,31 @@ Array.prototype.rcs = function () {
         }
     }
     return rcs
- }
+}
 
-Array.prototype.deleteColumn =  function (c) { 
-    this.forEach(row => row.splice(c, 1)) 
+Array.prototype.deleteColumn = function (c) {
+    this.forEach(row => row.splice(c, 1))
     return this
 }
 
-Array.prototype.deleteRow = function (r) { 
-    this.splice(r, 1) 
+Array.prototype.deleteRow = function (r) {
+    this.splice(r, 1)
     return this
 }
 
 // adds new column (row) BEFORE the specified column (row)
-Array.prototype.addColumn = function (c, cellValue='.') { 
-    this.forEach((row, r) => row.splice(c, 0, cellValue)) 
+Array.prototype.addColumn = function (c, cellValue = '.') {
+    this.forEach((row, r) => row.splice(c, 0, cellValue))
     return this
 }
-Array.prototype.addRow = function (r, cellValue = '.') { 
+Array.prototype.addRow = function (r, cellValue = '.') {
     let c = this[0].length
     let newRow = Array(c).fill(cellValue)
     this.splice(r, 0, newRow)
     return this
- }
+}
 
-Array.prototype.column =  function (c) { return this.map(row => row[c]) }
+Array.prototype.column = function (c) { return this.map(row => row[c]) }
 
 Array.prototype.transpose = function () {
     return this[0].map((_, i) => this.map(row => row[i]))
@@ -211,6 +213,24 @@ Array.prototype.joinjoin = function (j1 = '', j2 = '\n') { return this.map(row =
 
 function lengthFn(x) { return x.length }
 function sizeFn(x) { return x.size }
+
+// Categorize array element to a category 0, 1, 2, ...
+Array.prototype.categorize = function () {
+    let result = []
+    let cat = 0
+    let categories = new Map()
+
+    for (let x of this) {
+        if (categories.has(x)) {
+            result.push(categories.get(x))
+        } else {
+            categories.set(x, cat)
+            result.push(cat)
+            ++cat
+        }
+    }
+    return [result, categories]
+}
 
 // solve linear equation
 
@@ -228,12 +248,16 @@ class Graph {
     // }
 
     // add directed edge
-    addEdge(v1, v2, cost=1) {
+    addEdge(v1, v2, cost = 1) {
+        // log('addEdge', v1, v2, cost)
         v1 = v1.toString()
         v2 = v2.toString()
 
         if (!this.aList.get(v1)) {
             this.aList.set(v1, [])
+        }
+        if (!this.aList.get(v2)) {
+            this.aList.set(v2, [])
         }
         let _v1 = this.aList.get(v1)
 
@@ -245,12 +269,16 @@ class Graph {
     findShortestPath(start, end) {
         start = start.toString()
         end = end.toString()
+        let count = 0
 
         const distances = {}
         const previous = {}
         const pq = new PriorityQueue()
 
-        for (let vertex /* :string */ in this.aList.keys()) {
+        for (let vertex /* :string */ of this.aList.keys()) {
+            ++count
+            // if (count%100 === 0) log(count)
+
             if (vertex === start) {
                 distances[vertex] = 0
                 pq.enqueue(vertex, 0)
@@ -338,30 +366,77 @@ class PriorityQueue {
 
     enqueue(vertex, priority) {
         this.values.push({ vertex, priority })
-        this.sort()
+        this.bubbleUp()
     }
 
     dequeue() {
-        return this.values.shift()
+        const min = this.values[0]
+        const end = this.values.pop()
+        if (this.values.length > 0) {
+            this.values[0] = end
+            this.sinkDown()
+        }
+        return min
     }
 
     isEmpty() {
         return this.values.length === 0
     }
 
-    sort() {
-        this.values.sort((a, b) => a.priority - b.priority)
+    bubbleUp() {
+        let idx = this.values.length - 1
+        const element = this.values[idx]
+        while (idx > 0) {
+            let parentIdx = Math.floor((idx - 1) / 2)
+            let parent = this.values[parentIdx]
+            if (element.priority >= parent.priority) break
+            this.values[parentIdx] = element
+            this.values[idx] = parent
+            idx = parentIdx
+        }
+    }
+
+    sinkDown() {
+        let idx = 0
+        const length = this.values.length
+        const element = this.values[0]
+        while (true) {
+            let leftChildIdx = 2 * idx + 1
+            let rightChildIdx = 2 * idx + 2
+            let leftChild, rightChild
+            let swap = null
+
+            if (leftChildIdx < length) {
+                leftChild = this.values[leftChildIdx]
+                if (leftChild.priority < element.priority) {
+                    swap = leftChildIdx
+                }
+            }
+            if (rightChildIdx < length) {
+                rightChild = this.values[rightChildIdx]
+                if (
+                    (swap === null && rightChild.priority < element.priority) ||
+                    (swap !== null && rightChild.priority < leftChild.priority)
+                ) {
+                    swap = rightChildIdx
+                }
+            }
+            if (swap === null) break
+            this.values[idx] = this.values[swap]
+            this.values[swap] = element
+            idx = swap
+        }
     }
 }
 
 class Maze {
-    constructor(data, { addBorder=false }) {
+    constructor(data, { addBorder = false, borderChar = '.' } = {}) {
         this.data = data
         this.rows = data.split('\n')
 
         if (addBorder) {
-            this.rows = this.rows.map(row => '.' + row + '.')
-            let border = '.'.repeat(this.rows[0].length)
+            this.rows = this.rows.map(row => borderChar + row + borderChar)
+            let border = borderChar.repeat(this.rows[0].length)
             this.rows.unshift(border)
             this.rows.push(border)
         }
@@ -373,31 +448,35 @@ class Maze {
 
     get psRC() { // [[r,c]...] for all interior points
         let { r, c } = this
-        return rng(r-2).flatMap(i => rng(c-2).map(j => [i+1, j+1])) 
+        return rng(r - 2).flatMap(i => rng(c - 2).map(j => [i + 1, j + 1]))
     }
-    
+
     get allPs() { // interior points
         let { m, c } = this
-        return rng(c, m.length-c) 
+        return rng(c, m.length - c)
     }
 
     get ps() { return rng(this.m.length).filter(p => this.m[p] !== '#') }
 
     // returns p
-    find = (cc) => { 
-        let p = this.m.indexOf(cc) 
+    find = (cc) => {
+        let p = this.m.indexOf(cc)
         assert(p !== -1, `Cannot find ${cc}`)
         return p
     }
 
     dirs = () => {
         let { c } = this
-        return { U: -c, D: c, L: -1, R: 1, ds: [-c, c, -1, 1] }
+        return {
+            U: -c, D: c, L: -1, R: 1,
+            ds: [-c, c, -1, 1],
+            iU: 0, iD: 1, iL: 2, iR: 3
+        }
     }
 
     fr = (p) => { return m[p] !== '#' }
 
-    allowedDirs = (p, disallowed=[]) => {
+    allowedDirs = (p, disallowed = []) => {
         let { m, c } = this
         let allowed = []
         if (m[p] === '#') return allowed
@@ -422,7 +501,7 @@ class Maze {
         return 0
     }
 
-   d2dc = (d) => {
+    d2dc = (d) => {
         let { c } = this
         if (d === -c) return '^'
         if (d === c) return 'v'
@@ -514,7 +593,7 @@ function memoize(fn, tracePath) {
         if (args.length === 0) {
             hitsAndMisses.keys = Object.keys(cache).length
             assert(tracePath, 'tracePath was not provided')
-            fs.writeFileSync(tracePath, 
+            fs.writeFileSync(tracePath,
                 sfy(hitsAndMisses) + '\n' + traces.join('\n'))
             traces = []
             return
@@ -539,7 +618,7 @@ function memoize(fn, tracePath) {
 }
 
 // fn() to write trace info to tracePath
-function traceFn(fn, tracePath='trace.txt') {
+function traceFn(fn, tracePath = 'trace.txt') {
     const traces = []
 
     return function (...args) {
@@ -557,11 +636,9 @@ function traceFn(fn, tracePath='trace.txt') {
     }
 }
 
+// https://adventofcode.com/2023/day/17
 
-process.chdir('/Users/nmiles/source/aoc/2023/day_12')
+process.chdir('/Users/nmiles/source/aoc/2023/day17')
 
-data = fs.readFileSync('data.txt', 'utf8')
-
-testData = ``
-
-log('done')
+let myData = fs.readFileSync('data.txt', 'utf8')
+let testData = fs.readFileSync('testData.txt', 'utf8')
