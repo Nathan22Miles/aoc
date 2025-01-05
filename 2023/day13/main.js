@@ -1,4 +1,3 @@
-// https://adventofcode.com/2023/day/12
 
 const assert = require('assert')
 const fs = require('fs')
@@ -7,14 +6,14 @@ const log = console.log
 
 function pad(x, len=3, cc=' ') { return x.toString().padStart(len, cc) }
 
-rng = (n, m) => { 
+const rng = (n, m) => { 
     if (m === undefined) return Array.from({ length: n }, (_, i) => i)
     return Array.from({ length: m-n }, (_, i) => i+n) 
 }
 // rngRC = (r, c) => rng(r).flatMap(i => rng(c).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 // rngArr = (arr) => rng(arr.length).flatMap(i => rng(arr[0].length).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 
-sfy = x => JSON.stringify(x)
+const sfy = x => JSON.stringify(x)
 
 // ============ Map extensions ============
 
@@ -63,6 +62,10 @@ Set.prototype._add = function (arr) { arr.forEach(x => this.add(x)) }
 Set.prototype._delete = function (arr) { arr.forEach(x => this.delete(x)) }
 
 // ============ Array extensions ============
+
+function parse2D(data) {
+    return data.trim().split('\n').map(row => row.split(''))
+}
 
 Array.prototype.eq = function (arr2) { return this.every((x, i) => x === arr2[i]) }
 Array.prototype.lt = function (arr2) {
@@ -211,6 +214,24 @@ Array.prototype.joinjoin = function (j1 = '', j2 = '\n') { return this.map(row =
 
 function lengthFn(x) { return x.length }
 function sizeFn(x) { return x.size }
+
+// Categorize array element to a category 0, 1, 2, ...
+Array.prototype.categorize = function () {
+    let result = []
+    let cat = 0
+    let categories = new Map()
+
+    for (let x of this) {
+        if (categories.has(x)) {
+            result.push(categories.get(x))
+        } else {
+            categories.set(x, cat)
+            result.push(cat)
+            ++cat
+        }
+    }
+    return [result, categories]
+}
 
 // solve linear equation
 
@@ -557,11 +578,125 @@ function traceFn(fn, tracePath='trace.txt') {
     }
 }
 
+// https://adventofcode.com/2023/day/13
 
-process.chdir('/Users/nmiles/source/aoc/2023/day_12')
+process.chdir('/Users/nmiles/source/aoc/2023/day13')
 
-data = fs.readFileSync('data.txt', 'utf8')
+let myData = fs.readFileSync('data.txt', 'utf8')
 
-testData = ``
+let testData = `#.##..##.
+..#.##.#.
+##......#
+##......#
+..#.##.#.
+..##..##.
+#.#.##.#.
+
+#...##..#
+#....#..#
+..##..###
+#####.##.
+#####.##.
+..##..###
+#....#..#`
+
+function views(row, i) {
+    let len = row.length
+    assert(i > 0 && i < len)
+    if (2*i <= len) { return [row.slice(0, i), row.slice(i, 2*i)] }
+    let rlen = len - i
+    return [row.slice(i-rlen, i), row.slice(i, i+rlen)]
+}
+
+assert(views('abcde', 1).eq(['a', 'b']))
+assert(views('abcde', 2).eq(['ab', 'cd']))
+assert(views('abcde', 3).eq(['bc', 'de']))
+assert(views('abcde', 4).eq(['d', 'e']))
+assert(views('abcd', 2).eq(['ab', 'cd']))
+
+function mirrored(row, i) {
+    let [left, right] = views(row, i)
+    return left.eq(right.reverse())
+}
+
+assert(mirrored([1, 2, 2, 1], 2))
+
+assert(['a', 'b', 'a'].categorize()[0].eq([0, 1, 0]))
+
+function findRowReflectionLine(m) {
+    let [result] = m.map(row => row.join('')).categorize()
+    let iRow = rng(1, m.length).find(i => mirrored(result, i))
+    return iRow ?? 0 
+}
+
+// let [test1, test2] = testData.split('\n\n').map(parse2D)
+// assert(findRowReflectionLine(test2) === 4)
+// assert(findSmudgedRowReflectionLine(test1) === 3)
+
+function findReflections(pattern) {
+    let m = parse2D(pattern)
+    let row = findRowReflectionLine(m)
+    let col = findRowReflectionLine(m.transpose())
+    return [row, col]
+}
+
+function part1(data, expected) {
+    let patterns = data.split('\n\n')
+    let summary = patterns.map(findReflections)
+        .map(([row, col]) => 100*row + col)
+        .sum()
+    assert(summary === expected, `Expected ${expected} but got ${summary}`)
+}
+
+function findSmudgedRowReflectionLine(m) {
+    // log(m.map(row => row.join('')).join('\n'))
+
+    let [result, categories] = m.map(row => row.join('')).categorize()
+    let iRow1 = rng(1, m.length).find(i => mirrored(result, i))
+
+    for (let i = 0; i < m.length; i++) {
+        let row = m[i]
+        // try smudging each mirror
+        for (let smudge = 0; smudge < row.length; smudge++) {
+            let row2 = row.slice()
+            row2[smudge] = row2[smudge] === '.' ? '#' : '.'
+            let cat = categories.get(row2.join(''))
+            if (cat === undefined) continue // smudged row does not match any existing row
+
+            let result2 = result.slice()
+            result2[i] = cat
+            let iRow2 = rng(1, m.length)
+                .filter(k => mirrored(result2, k))
+                .filter(k => k !== iRow1)
+                .last()
+            if (iRow2 !== undefined) return iRow2
+        }
+    }
+
+    return 0
+}
+
+function findSmudgedReflections(pattern, iRow) {
+    let m = parse2D(pattern)
+    let row = findSmudgedRowReflectionLine(m)
+    let col = findSmudgedRowReflectionLine(m.transpose())
+    if (row <= 0 && col <= 0) {
+        log(`No smudged reflection line found for ${iRow}`)
+    }
+    return [row, col]
+}
+
+function part2(data) {
+    let patterns = data.split('\n\n')
+    let summary = patterns
+        .map(findSmudgedReflections)
+        .map(([row, col]) => 100 * row + col)
+        .sum()
+    return summary
+}
+
+// part1(myData, 33728)
+// log('part2', part2(testData)) // should be 400
+log('part2', part2(myData)) // should be 28235
 
 log('done')
