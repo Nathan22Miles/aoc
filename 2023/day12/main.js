@@ -557,12 +557,12 @@ function matches(pat, groups) {
     let reqds = groups.map((c, i) => groups.slice(i).sum() + groups.slice(i).length - 1)
 
     // !!! should be extracted with assert tests
-    let can = (cc, choices) => choices.includes(cc)
-    let mayBeDot = i => can(pat[i], ['?', '.'])
+    let is = (cc, choices) => choices.includes(cc)
+    let mayBeDot = i => is(pat[i], ['?', '.'])
     let mayBeHashes = (i, len) => pat
             .slice(i, i + len)
             .split('')
-            .every(cc => can(cc, ['?', '#']))
+            .every(cc => is(cc, ['?', '#']))
      
     function _dfs(ip, ig) {
         if (ig >= groups.length) return ip > lastHash ? 1 : 0
