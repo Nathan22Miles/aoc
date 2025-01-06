@@ -2,8 +2,9 @@
 Practice for AOC.
 
 My main goals
-- clarity of expression
-- correctness thru simplicity
+- Clarity of expression
+- Correctness thru simplicity
+- Create a small js library to help solve problems
 
 Things I am learning
 - Always view your transformed/parsed input data before running (you might have not got it transformed correctly)
@@ -19,3 +20,6 @@ Things I am learning
     - Tighten/loosen allowed path rules
     - Determine all the solutions instead of one solution
 - Use a heavy dose of asserts to find the places where you code is not behaving the way you expect.
+
+Things I am still pondering
+- Do I lose or save time by using JS instead of TS? TS is more typing but I suspect there is usually at least one bug in my solution it would have caught (which would reduce debugging time)

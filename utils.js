@@ -1,6 +1,5 @@
 const assert = require('assert')
 const fs = require('fs')
-const _ = console.log
 const log = console.log
 
 function pad(x, len = 3, cc = ' ') { return x.toString().padStart(len, cc) }
@@ -13,6 +12,7 @@ const rng = (n, m) => {
 // rngArr = (arr) => rng(arr.length).flatMap(i => rng(arr[0].length).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 
 const sfy = x => JSON.stringify(x)
+const ssfy = x => JSON.stringify(x, null, 4)
 
 // ============ Map extensions ============
 
@@ -636,9 +636,6 @@ function traceFn(fn, tracePath = 'trace.txt') {
     }
 }
 
-// https://adventofcode.com/2023/day/17
-
-process.chdir('/Users/nmiles/source/aoc/2023/day17')
-
-let myData = fs.readFileSync('data.txt', 'utf8')
-let testData = fs.readFileSync('testData.txt', 'utf8')
+module.exports = {
+    traceFn, memoize, Maze, Graph, PriorityQueue, rng, sfy, ssfy, pad, parse2D
+}
