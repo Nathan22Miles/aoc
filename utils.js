@@ -577,6 +577,19 @@ class Maze {
 
     rc2p = ([r, c]) => this.c * r + c
 
+    d2i = (d) => {
+        let { iU, iD, iL, iR, U, D, L, R } = this.dirs()
+        if (d === U) return iU
+        if (d === D) return iD
+        if (d === L) return iL
+        if (d === R) return iR
+        assert(false, `Invalid direction ${d}`)
+    }
+
+    i2d = (d) => {
+        let { ds } = this.dirs()
+        return ds[d]
+    }
 }
 
 // If tracePath is provided, memoize will save traces to the file 
