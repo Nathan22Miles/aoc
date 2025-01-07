@@ -11,6 +11,8 @@ const rng = (n, m) => {
 // rngRC = (r, c) => rng(r).flatMap(i => rng(c).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 // rngArr = (arr) => rng(arr.length).flatMap(i => rng(arr[0].length).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 
+const make2D = (r, c, fill = 0) => Array.from({ length: r }, () => Array(c).fill(fill))
+
 const sfy = x => JSON.stringify(x)
 const ssfy = x => JSON.stringify(x, null, 4)
 
@@ -113,10 +115,18 @@ Array.prototype.avg = function () { return this.reduce((a, b) => a + b, 0) / thi
 Array.prototype.mul = function () { return this.reduce((a, b) => a * b, 1) }
 Array.prototype.and = function () { return this.reduce((a, b) => a && b, true) }
 Array.prototype.or = function () { return this.reduce((a, b) => a || b, false) }
-Array.prototype.min = function () { return this.reduce((a, b) => a < b ? a : b, this[0]) }
-Array.prototype.max = function () { return this.reduce((a, b) => a > b ? a : b, this[0]) }
 Array.prototype.count = function () { return this.filter(x => x).length }
 Array.prototype.toInt = function () { return this.map(x => parseInt(x)) }
+
+Array.prototype.min = function () { return this.reduce((a, b) => a < b ? a : b, this[0]) }
+Array.prototype.max = function () { return this.reduce((a, b) => a > b ? a : b, this[0]) }
+
+Array.prototype.field = function (field) { return this.map(x => x[field]) }
+
+Array.prototype.jn = function () { return this.join('') }
+Array.prototype.jnn = function () { return this.join('\n') }
+
+Array.prototype.replace = function (pat, val) { return this.map(x => x.replace(pat, val)) }
 
 Array.prototype.deltas = function () { return this.slice(1).map((value, index) => value - this[index]) }
 
@@ -650,5 +660,6 @@ function traceFn(fn, tracePath = 'trace.txt') {
 }
 
 module.exports = {
-    traceFn, memoize, Maze, Graph, PriorityQueue, rng, sfy, ssfy, pad, parse2D
+    traceFn, memoize, Maze, Graph, PriorityQueue, rng, sfy, ssfy, pad, parse2D, make2D,
+    lengthFn, sizeFn,
 }
