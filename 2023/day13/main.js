@@ -13,6 +13,7 @@ const rng = (n, m) => {
 // rngRC = (r, c) => rng(r).flatMap(i => rng(c).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 // rngArr = (arr) => rng(arr.length).flatMap(i => rng(arr[0].length).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 
+log('sum', sum)
 const sfy = x => JSON.stringify(x)
 
 // ============ Map extensions ============
