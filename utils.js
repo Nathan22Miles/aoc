@@ -2,13 +2,20 @@ const assert = require('assert')
 const fs = require('fs')
 const log = console.log
 
+/**
+ * Left pad a number or string with a character to a specified length
+ * @param {*} x number or string
+ * @param {*} len total length of result field (default 3)
+ * @param {*} cc character to pad with (default ' ')
+ * @returns string
+ */
 function pad(x, len = 3, cc = ' ') { return x.toString().padStart(len, cc) }
 
 const rng = (n, m) => {
     if (m === undefined) return Array.from({ length: n }, (_, i) => i)
     return Array.from({ length: m - n }, (_, i) => i + n)
 }
-// rngRC = (r, c) => rng(r).flatMap(i => rng(c).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
+const rng2 = (r, c) => rng(r).flatMap(i => rng(c).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 // rngArr = (arr) => rng(arr.length).flatMap(i => rng(arr[0].length).map(j => [i, j])) // [[0, 0], [0, 1], ..., [r-1, c-1]]
 
 const make2D = (r, c, fill = 0) => Array.from({ length: r }, () => Array(c).fill(fill))
@@ -118,6 +125,21 @@ Array.prototype.or = function () { return this.reduce((a, b) => a || b, false) }
 Array.prototype.count = function () { return this.filter(x => x).length }
 Array.prototype.toInt = function () { return this.map(x => parseInt(x)) }
 
+/** Split the array into subarrays wherever the split function returns true */
+Array.prototype.splitWhen = function (splitFn) {
+    let result = [[]]
+
+    for (let x of this) {
+        if (splitFn(x)) {
+            result.push([x])
+        } else {
+            result.last().push(x)
+        }
+    }
+
+    return result
+}
+
 Array.prototype.min = function () { return this.reduce((a, b) => a < b ? a : b, this[0]) }
 Array.prototype.max = function () { return this.reduce((a, b) => a > b ? a : b, this[0]) }
 
@@ -220,9 +242,6 @@ Array.prototype.transpose = function () {
 }
 
 Array.prototype.joinjoin = function (j1 = '', j2 = '\n') { return this.map(row => row.join(j1)).join(j2) }
-
-function lengthFn(x) { return x.length }
-function sizeFn(x) { return x.size }
 
 // Categorize array element to a category 0, 1, 2, ...
 Array.prototype.categorize = function () {
@@ -659,7 +678,74 @@ function traceFn(fn, tracePath = 'trace.txt') {
     }
 }
 
+// caclulate modulo taking into account possibility of negative numbers
+function modulo(n, m) { return ((n % m) + m) % m }
+
+// return overlap range or null if none
+function segmentOverlap([s1, e1], [s2, e2]) {
+    let s = Math.max(s1, s2)
+    let e = Math.min(e1, e2)
+    if (s > e) return null
+    return [s, e]
+}
+
+// Points from which a line drawn to infinity intersects the polygon
+// an odd number of time are 'inside'
+// point = [x0, y0]
+// polygon = [[x1, y1], [x2, y2], ...]
+// returns true/false
+function isPointInPolygon(point, polygon) {
+    let [x, y] = point
+    let inside = false
+
+    for (let i = 0; i < polygon.length; i++) {
+        let [xi, yi] = polygon[i]
+        let [xj, yj] = polygon[i + 1] ?? polygon[0]
+
+        let intersect = ((yi > y) !== (yj > y)) &&
+            (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+        if (intersect) {
+            inside = !inside
+        }
+    }
+
+    return inside
+}
+
+// Shoelace Formula (because the coordinates cross like shoelaces) 
+// Gauss's Area Formula
+// Surveyor's Formula (because it's used in surveying)
+// Known in antiquity!
+// vertices = [[x1, y1], [x2, y2], ...]
+
+// Note if the polygon has a border of width one centered on the given vertices,
+// add perimiter/2 + 1 to the result.
+
+function calculatePolygonArea(vertices) {
+    let area = 0
+    const n = vertices.length
+
+    for (let i = 0; i < n; i++) {
+        let [x1, y1] = vertices[i]
+        let [x2, y2] = vertices[(i + 1) % n]
+        area += x1 * y2 - x2 * y1
+    }
+
+    return Math.abs(area) / 2
+}
+
+// Functions to user for map(fn)
+
+// cannot safely pass parseInt as map function because of extra optional arguments
+// get misinterpreted as radix
+function parseIntFn(x) { return parseInt(x) }
+function parseFloatFn(x) { return parseFloat(x) } // not really needed
+function lengthFn(x) { return x.length }
+function sizeFn(x) { return x.size }
+
 module.exports = {
-    traceFn, memoize, Maze, Graph, PriorityQueue, rng, sfy, ssfy, pad, parse2D, make2D,
-    lengthFn, sizeFn,
+    traceFn, memoize, Maze, Graph, PriorityQueue, rng, rng2, 
+    sfy, ssfy, pad, parse2D, make2D, modulo,
+    lengthFn, sizeFn, parseIntFn, parseFloatFn,
+    segmentOverlap, isPointInPolygon, calculatePolygonArea
 }
