@@ -10,11 +10,10 @@ const { traceFn, memoize, Maze, Graph, PriorityQueue,
 
 process.chdir('/Users/nmiles/source/aoc/2023/day19')
 
-
 let myData = fs.readFileSync('data.txt', 'utf8')
 let testData = fs.readFileSync('testData.txt', 'utf8')
-let data = testData
-// let data = myData
+// let data = testData
+let data = myData
 
 let parts = []
 // ex: Consider the workflow 
@@ -98,22 +97,104 @@ class Node {
         return [a, op === '<' ? '>=' : '<=', b]
     }
 
-    // path = [test,...]
+    static addTest(path, test) {
+        let { x, m, a, s } = path
+        let result = { x: x.slice(), m: m.slice(), a: a.slice(), s: s.slice() }
+
+        for (let field of ['x', 'm', 'a', 's']) {
+            let [a, op, b] = test
+            if (a !== field) continue
+            switch (op) {
+                case '<':
+                    result[field][1] = Math.min(result[field][1], b - 1)
+                    break
+                case '<=':
+                    result[field][1] = Math.min(result[field][1], b)
+                    break
+                case '>':
+                    result[field][0] = Math.max(result[field][0], b + 1)
+                    break
+                case '>=':
+                    result[field][0] = Math.max(result[field][0], b)
+                    break
+                default:
+                    assert(false)
+            }
+        }
+
+        return result
+    }
+
+    // path = {x: [1,4000], m: [1,4000], a:[1,4000], s: [1,4000]}
     // returns: [path,...]
     successPaths(path) {
         if (this.result === 'A') return [path]
         if (this.result === 'R') return []
 
-        let truePaths = this.isTrue.successPaths([...path, this.test])
-        let falsePaths = this.isFalse.successPaths([...path, Node.invertTest(this.test)])
+        let truePath = Node.addTest(path, this.test)
+        let truePaths = this.isTrue.successPaths(truePath)
+
+        let falsePath = Node.addTest(path, Node.invertTest(this.test))
+        let falsePaths = this.isFalse.successPaths(falsePath)
         let result = [...truePaths, ...falsePaths]
         return result
     }
 }
 
+// return overlap range or null if none
+function overlap([s1, e1], [s2, e2]) {
+    let s = Math.max(s1, s2)
+    let e = Math.min(e1, e2)
+    if (s > e) return null
+    return [s, e]
+}
+
+assert(overlap([1, 10], [5, 15]).toString() === [5, 10].toString())
+
+// change a path into x/m/a/s sets
+function setPath(path) {
+    let { x, m, a, s } = path
+    return [ new Set(rng(x[0], x[1]+1)), new Set(rng(m[0], m[1]+1)), new Set(rng(a[0], a[1]+1)), new Set(rng(s[0], s[1]+1)) ]
+}
+
+function combos(paths) {
+    let count = 0
+
+    for (let i=0; i<paths.length; ++i) {
+        let p1 = paths[i]
+        let _setPath = setPath(p1)
+
+        for (let j=i-1; j >= 0; --j) {
+            // remove any combinations that overlap with earlier paths
+            let p2 = paths[j]
+            let o1 = overlap(p1.x, p2.x)
+            let o2 = overlap(p1.m, p2.m)
+            let o3 = overlap(p1.a, p2.a)
+            let o4 = overlap(p1.s, p2.s)
+
+            // must overlap in all positions to be a duplicate
+            // seems to never happen in my data, sigh
+            if (o1 && o2 && o3 && o4) {
+                o1.forEach(j => _setPath[0].delete(j))
+                o2.forEach(j => _setPath[1].delete(j))
+                o3.forEach(j => _setPath[2].delete(j))
+                o4.forEach(j => _setPath[3].delete(j))
+            }
+        }
+
+        count += _setPath[0].size * _setPath[1].size * _setPath[2].size * _setPath[3].size
+    }
+
+    return count
+}
+
 let node = new Node(flows.get('in'))
 
-log(node.successPaths([]).toString())
+const paths = node.successPaths({ x: [1, 4000], m: [1, 4000], a: [1, 4000], s: [1, 4000], })
+log(paths.toString())
+
+let _combos = combos(paths)
+log(_combos)
 
 // test combinations: 167409079868000
 
