@@ -743,9 +743,112 @@ function parseFloatFn(x) { return parseFloat(x) } // not really needed
 function lengthFn(x) { return x.length }
 function sizeFn(x) { return x.size }
 
+function gcd(a, b) {
+    while (b !== 0) {
+        [a, b] = [b, a % b]
+    }
+    return a
+}
+
+function lcm(a, b) {
+    return (a * b) / gcd(a, b)
+}
+
+class Comp {
+    constructor({ id, type, inputs, outputs }) {
+        assert(type)
+        this.type = type
+
+        assert(id)
+        this.id = id
+
+        this.inputs = inputs ?? []
+        this.outputs = outputs ?? []
+    }
+
+    static compsMap = new Map()
+
+    static ids() { return [...Comp.compsMap.keys()] }
+
+    static comps(type) {
+        return [...Comp.compsMap.values()]
+            .filter(comp => type === undefined || comp.type === type)
+    }
+
+    static get(id) { return Comp.compsMap.get(id) }
+
+    // Comp.parse(data, /(?<type>.)(?<id>\w+) -> (?<outputs>.*$)/)
+    // Comp.parse(data, /(?<inputs>.*$) => (?<type>.)(?<id>\w+)/)
+    static parse(data, regex) {
+        for (let line of data.split('\n')) {
+            let match = regex.exec(line)
+            let { type, id, outputs: _outputs, inputs: _inputs } = match.groups
+
+            let outputs = undefined
+            if (_outputs) {
+                outputs = _outputs.split(/\s*,\s*/)
+            }
+
+            let inputs = undefined
+            if (_inputs) {
+                inputs = _inputs.split(/\s*,\s*/)
+            }
+
+            Comp.compsMap.set(id, new Comp({ id, type, inputs, outputs }))
+        }
+
+        for (let comp of Comp.comps()) {
+            // if missing, build inputs from outputs field
+            if (comp.inputs.length === 0) {
+                comp.inputs = Comp.ids().filter(id => {
+                    let { outputs } = Comp.get(id)
+                    return outputs.includes(comp.id)
+                })
+            }
+
+            // if missing, build outputs from inputs field
+            if (comp.outputs.length === 0) {
+                comp.outputs = Comp.ids().filter(id => {
+                    let { inputs } = Comp.get(id)
+                    return inputs.includes(comp.id)
+                })
+            }
+        }
+    }
+
+    // Comp.setFunction('&', 'receive', function (fromModule, pulse) { ... })
+    static setFunction(type, name, fn) {
+        for (let comp of Comp.comps()) {
+            if (type === '' || comp.type === type) {
+                comp[name] = fn
+            }
+        }
+    }
+
+    _toString(visited, indent) {
+        let { id, type, inputs } = this
+        if (visited.has(id)) return `${indent}${type}${id} -> ...\n`
+        visited.add(id)
+
+        let str = `${indent}${type}${id}\n`
+        for (let input of inputs) {
+            str += Comp.get(input)._toString(visited, indent + '  ')
+        }
+
+        return str
+    }
+
+    static dump(compId, path = 'comp.txt') {
+        let comp = Comp.get(compId)
+        let str = comp._toString(new Set(), '')
+        fs.writeFileSync(path, str)
+    }
+}
+
 module.exports = {
     traceFn, memoize, Maze, Graph, PriorityQueue, rng, rng2, 
     sfy, ssfy, pad, parse2D, make2D, modulo,
     lengthFn, sizeFn, parseIntFn, parseFloatFn,
-    segmentOverlap, isPointInPolygon, calculatePolygonArea
+    segmentOverlap, isPointInPolygon, calculatePolygonArea,
+    gcd, lcm, Comp,
 }
