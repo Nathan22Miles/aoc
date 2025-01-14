@@ -56,6 +56,26 @@ function isPathList(x) {
     return Array.isArray(x) && x.every(p => Array.isArray(p) && p.length > 0)
 }
 
+// for (path in allPaths(startNode, [], neighborsFn, new Set()))
+function* allPaths(node, path, neighborsFn, visited) {
+    if (visited.has(node)) return
+    visited.add(node)
+    path.push(node)
+
+    let neighbors = neighborsFn(node)
+
+    if (neighbors.length === 0) {
+        yield path.slice()
+    } else {
+        for (let neighbor of neighbors[node]) {
+            yield* allPaths(neighbor, path, neighbors, visited)
+        }
+    }
+
+    path.pop()
+    visited.delete(node)
+}
+
 class Node {
     // result: 'A' | 'R' | undefined
     // isTrue: Node | undefined

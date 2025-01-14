@@ -754,6 +754,13 @@ function lcm(a, b) {
     return (a * b) / gcd(a, b)
 }
 
+function isInt(str) {
+    if (typeof str !== 'string') return false
+    
+    const num = parseInt(str, 10)
+    return !isNaN(num) && Number.isInteger(num)
+}
+
 class Comp {
     constructor({ id, type, inputs, outputs }) {
         assert(type)
@@ -782,7 +789,7 @@ class Comp {
     static parse(data, regex) {
         for (let line of data.split('\n')) {
             let match = regex.exec(line)
-            let { type, id, outputs: _outputs, inputs: _inputs } = match.groups
+            let { type, id, outputs: _outputs, inputs: _inputs, input1, input2 } = match.groups
 
             let outputs = undefined
             if (_outputs) {
@@ -792,6 +799,8 @@ class Comp {
             let inputs = undefined
             if (_inputs) {
                 inputs = _inputs.split(/\s*,\s*/)
+            } else if (input1) {
+                inputs = [input1, input2]
             }
 
             Comp.compsMap.set(id, new Comp({ id, type, inputs, outputs }))
@@ -827,10 +836,10 @@ class Comp {
 
     _toString(visited, indent) {
         let { id, type, inputs } = this
-        if (visited.has(id)) return `${indent}${type}${id} -> ...\n`
+        if (visited.has(id)) return `${indent}${id} ${type} -> ...\n`
         visited.add(id)
 
-        let str = `${indent}${type}${id}\n`
+        let str = `${indent}${id} ${type}\n`
         for (let input of inputs) {
             str += Comp.get(input)._toString(visited, indent + '  ')
         }
@@ -850,5 +859,5 @@ module.exports = {
     sfy, ssfy, pad, parse2D, make2D, modulo,
     lengthFn, sizeFn, parseIntFn, parseFloatFn,
     segmentOverlap, isPointInPolygon, calculatePolygonArea,
-    gcd, lcm, Comp,
+    gcd, lcm, Comp, isInt,
 }
