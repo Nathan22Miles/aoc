@@ -12,6 +12,9 @@ const log = console.log
 function pad(x, len = 3, cc = ' ') { return x.toString().padStart(len, cc) }
 
 const rng = (n, m) => {
+    // If m is a function, execute it n times
+    if (typeof m === 'function') return Array.from({ length: n }, (_, i) => m(i))
+        
     if (m === undefined) return Array.from({ length: n }, (_, i) => i)
     return Array.from({ length: m - n }, (_, i) => i + n)
 }
@@ -22,6 +25,17 @@ const make2D = (r, c, fill = 0) => Array.from({ length: r }, () => Array(c).fill
 
 const sfy = x => JSON.stringify(x)
 const ssfy = x => JSON.stringify(x, null, 4)
+
+// regex, e.g., /(?<type>.)(?<id>\w+) -> (?<outputs>.*$)/
+String.prototype._match = function (regex, splitter = /\s*,\s*/) {
+    let match = regex.exec(this)
+    for (let key of Object.keys(match?.groups ?? [])) {
+        if (key.endsWith('s')) {
+            match.groups[key] = match.groups[key].split(splitter)
+        }
+    }
+    return match?.groups
+}
 
 // ============ Map extensions ============
 
@@ -475,6 +489,9 @@ class Maze {
         this.m = this.rows.join('').split('')
     }
 
+    get S() { return this.find('S') }
+    get E() { return this.find('E') }
+
     get psRC() { // [[r,c]...] for all interior points
         let { r, c } = this
         return rng(r - 2).flatMap(i => rng(c - 2).map(j => [i + 1, j + 1]))
@@ -486,6 +503,22 @@ class Maze {
     }
 
     get ps() { return rng(this.m.length).filter(p => this.m[p] !== '#') }
+
+    neighbors = (pList, steps) => {
+        if (!Array.isArray(pList)) pList = [pList]
+
+        if (steps === 0) return pList
+        let result = new Set()
+        for (let p of pList) {
+            for (let d of [-this.c, this.c, -1, 1]) {
+                let np = p + d
+                if (this.m[np] !== '#') {
+                    result.add(np)
+                }
+            }
+        }
+        return this.neighbors([...result], steps - 1)
+    }
 
     // returns p
     find = (cc) => {
@@ -598,7 +631,7 @@ class Maze {
             if (i === 0) {
                 row = row.slice(0, 9) + '|' + row.slice(10)
             }
-            rows.push(`${pad(rowNum)} ${pad(i)} ${row}`)
+            rows.push(`${pad(rowNum)} ${pad(i, 5)} ${row}`)
             ++rowNum
         }
         return rows.join('\n')
