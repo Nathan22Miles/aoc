@@ -31,7 +31,7 @@ class Brick {
         this.supporters = []
         this.supports = []
 
-        this.dropped = this.zMin === 1
+        this.below = [] // bricks below this one with overlapping base
     }
 
     setZMin(_zMin) {
@@ -52,16 +52,24 @@ class Brick {
         return this.zMin <= b2.zMax && this.zMax >= b2.zMin
     }   
 
-    compare(b2) {
-        if (!this.hasBaseOverlap(b2)) {
-            return 0
-        }
+    setBelow(bricks) {
+        let overlaps = bricks.filter(_b => this.hasBaseOverlap(_b))
+        this.below = overlaps.filter(_b => _b.zMax < this.zMin)
+    }
 
-        if (this.zMin > b2.zMax) {
-            return 1
-        }
+    // is b1 recursively below this
+    isBelow = (b1) => {
+        if (b1.below.includes(this)) { return true }
+        return b1.below.some(_b => this.isBelow(_b))
+    }
 
-        return -1
+    static compare (b1, b2)  {
+        let b1BelowB2 = b1.isBelow(b2)
+        let b2BelowB1 = b2.isBelow(b1)
+        log(b1, b2, b1BelowB2, b2BelowB1)
+        if (b1BelowB2) { return -1 }
+        if (b2BelowB1) { return 1 }
+        return 0
     }
 
     isSupportFor(b2) {
@@ -80,33 +88,25 @@ class Bricks {
             let [x, y, z, x2, y2, z2] = line.match(/(\d+)/g).map(Number)
             return new Brick([x, y, z], [x2, y2, z2])
         })
-    }
 
-    below(b) {
-        let overlaps = this.bricks.filter(_b => b.hasBaseOverlap(_b))
-        return overlaps.filter(_b => _b.zMax < b.zMin)
+        this.bricks.forEach(b => b.setBelow(this.bricks))
     }
 
     dropAll() {
         let { bricks } = this
 
-        while (true) {
-            let undropped = bricks.filter(b => !b.dropped)
-            if (undropped.length === 0) { break }
+        bricks.sort((b1, b2) => b1.zMin - b2.zMin)
 
-            for (let b of undropped) {
-                let belows = this.below(b)
-                if (belows.filter(_b => !_b.dropped).length === 0) {
-                    let max = belows.map(_b => _b.zMax).max()
-                    if (max  === -Infinity) { max = 0 }
+        for (let b of bricks) {
+            let max = b.below.map(x => x.zMax).max()
+            if (max  === -Infinity) { max = 0 }
 
-                    b.setZMin(max + 1)
-                    b.dropped = true
-                }
-            }
+            b.setZMin(max + 1)
         }
         
         this.setSupports()
+
+        this.validate()
     }
 
     setSupports() {
@@ -118,10 +118,14 @@ class Bricks {
                 if (b2.isSupportFor(b1)) { b2.supports.push(b1) }
             }
         }
+    }
+
+    validate() {
+        let { bricks } = this
 
         // assert every brick is on ground or is supported
         assert(bricks.every(b => b.supporters.length > 0 || b.zMin === 1))
-        
+
         // no bricks with overlapping bases overlap vertically
         for (let b1 of bricks) {
             for (let b2 of bricks) {
@@ -130,26 +134,11 @@ class Bricks {
                 }
             }
         }
-
-        for (let b1 of bricks) {
-            for (let b2 of b1.supports) {
-                assert(b1.isSupportFor(b2))
-            }
-            for (let b2 of b1.supporters) {
-                assert(b2.isSupportFor(b1))
-            }
-        }
-
     }
 
     isSafe(brick) {
         return this.bricks.every(b => 
             b.supporters.length >= 2 || !b.supporters.includes(brick))
-    }
-
-    isSafe2(brick) {
-        if (brick.supports.length === 0) { return true }
-        return brick.supports.every(b => b.supporters.length >= 2)
     }
 
     safeBricks() {
@@ -170,6 +159,4 @@ bricks.dropAll()
 
 // Bricks.log(bricks.safeBricks())
 log(bricks.safeBricks().length)
-
-// log(bricks.bricks.filter(b => bricks.isSafe2(b)).length)
 // 495 is correct answer
