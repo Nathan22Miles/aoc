@@ -154,8 +154,8 @@ Array.prototype.splitWhen = function (splitFn) {
     return result
 }
 
-Array.prototype.min = function () { return this.reduce((a, b) => a < b ? a : b, this[0]) }
-Array.prototype.max = function () { return this.reduce((a, b) => a > b ? a : b, this[0]) }
+Array.prototype.min = function () { return this.reduce((a, b) => a < b ? a : b, Infinity) }
+Array.prototype.max = function () { return this.reduce((a, b) => a > b ? a : b, -Infinity) }
 
 Array.prototype.field = function (field) { return this.map(x => x[field]) }
 
