@@ -150,6 +150,26 @@ class Bricks {
     }
 }
 
+function wouldFall(brick, bricks) {
+    let fallen = new Set([brick])
+    let somethingFell = true
+
+    while (somethingFell) {
+        somethingFell = false
+        for (let _brick of bricks) {
+            if (fallen.has(_brick)) { continue }
+            if (_brick.zMin === 1) { continue }
+
+            if (_brick.supporters.every(b => fallen.has(b))) {
+                fallen.add(_brick)
+                somethingFell = true
+            }
+        }
+    }
+
+    return fallen.size - 1 // subtract 1 for the original brick
+}
+
 let data = fs.readFileSync('data.txt', 'utf8')
 let testData = fs.readFileSync('testData.txt', 'utf8')
 // data = testData
@@ -160,3 +180,5 @@ bricks.dropAll()
 // Bricks.log(bricks.safeBricks())
 log(bricks.safeBricks().length)
 // 495 is correct answer
+
+log('total falls', bricks.bricks.map(b => wouldFall(b, bricks.bricks)).log().sum())
