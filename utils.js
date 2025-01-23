@@ -887,10 +887,26 @@ class Comp {
     }
 }
 
+function solveLinear(a1, b1, c1, a2, b2, c2) {
+    // Calculate the determinant
+    let determinant = a1 * b2 - a2 * b1
+
+    if (determinant === 0) {
+        return []
+        // throw new Error("The system of equations has no unique solution.")
+    }
+
+    // Calculate x and y
+    let x = (c1 * b2 - c2 * b1) / determinant
+    let y = (a1 * c2 - a2 * c1) / determinant
+
+    return [ x, y ]
+}
+
 module.exports = {
     traceFn, memoize, Maze, Graph, PriorityQueue, rng, rng2, 
     sfy, ssfy, pad, parse2D, make2D, modulo,
     lengthFn, sizeFn, parseIntFn, parseFloatFn,
     segmentOverlap, isPointInPolygon, calculatePolygonArea,
-    gcd, lcm, Comp, isInt,
+    gcd, lcm, Comp, isInt, solveLinear,
 }
