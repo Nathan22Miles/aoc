@@ -191,6 +191,17 @@ Array.prototype.pairs = function () {
     return pairs
 }
 
+Array.prototype.crosses = function (that) {
+    let crosses = []
+    for (let i = 0; i < this.length - 1; i++) {
+        for (let j = 0; j < that.length; j++) {
+            crosses.push([this[i], that[j]])
+        }
+    }
+    return crosses
+}
+
+
 Array.prototype.is2D = function () {
     if (this.length === 0) return false
     return this.every(x => Array.isArray(x))
@@ -292,6 +303,9 @@ class Graph {
 
     // add directed edge
     addEdge(v1, v2, cost = 1) {
+        // ignore infinite cost edges
+        if (cost === Infinity) return
+
         // log('addEdge', v1, v2, cost)
         v1 = v1.toString()
         v2 = v2.toString()
@@ -536,7 +550,7 @@ class Maze {
         }
     }
 
-    fr = (p) => { return m[p] !== '#' }
+    fr = (p) => { return this.m[p] !== '#' }
 
     allowedDirs = (p, disallowed = []) => {
         let { m, c } = this
