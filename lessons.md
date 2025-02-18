@@ -12,3 +12,9 @@ When too slow, try memoize ... even if you think there are two many arg combos .
 Draw more pictures.
 
 Test the most application of the algorithm you can think of ... then work up. Don't assume your code is working for simple cases.
+
+You can use a bit mask as 32 or smaller member set
+
+Reduce the problem to just the decision points and use DFS on them
+
+Floyd–Warshall algorithm for all point pairs shortest distance. O(v**3)

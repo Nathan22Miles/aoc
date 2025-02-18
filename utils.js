@@ -89,6 +89,12 @@ function parse2D(data) {
     return data.trim().split('\n').map(row => row.split(''))
 }
 
+Array.prototype.toMap = function (fnKey, fnValue) {
+    let map = new Map()
+    this.forEach((x, i) => map.set(fnKey(x, i, this), fnValue(x, i, this)))
+    return map
+}
+
 Array.prototype.eq = function (arr2) { return this.every((x, i) => x === arr2[i]) }
 Array.prototype.lt = function (arr2) {
     assert(this.length === arr2.length)
@@ -201,6 +207,9 @@ Array.prototype.crosses = function (that) {
     return crosses
 }
 
+Array.prototype.zip = function (that) {
+    return this.map((x, i) => [x, that[i]])
+}
 
 Array.prototype.is2D = function () {
     if (this.length === 0) return false
