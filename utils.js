@@ -62,6 +62,8 @@ Map.prototype.groupBy = function (values, fieldOrFn) {
         }
         this.push(key, value)
     }
+
+    return this
 }
 
 Map.prototype.countBy = function (values, fieldOrFn) {
@@ -75,6 +77,8 @@ Map.prototype.countBy = function (values, fieldOrFn) {
         let count = this.get(key) ?? 0
         this.set(key, count + 1)
     }
+
+    return this
 }
 
 // ============ Set extensions ============
@@ -83,11 +87,31 @@ Set.prototype._add = function (arr) { arr.forEach(x => this.add(x)) }
 
 Set.prototype._delete = function (arr) { arr.forEach(x => this.delete(x)) }
 
+Set.prototype.and = function (otherSet) {
+    return new Set([...this].filter(x => otherSet.has(x)))
+}
+
+Set.prototype.or = function (otherSet) {
+    let result = new Set([...this])
+    for (let x of otherSet) result.add(x)
+    return result
+}
+
+Set.prototype.andNot = function (otherSet) {
+    let result = new Set([...this])
+    for (let x of otherSet) result.delete(x)
+    return result
+}
+
+Set.prototype.toArray = function () { return [...this] }
+
 // ============ Array extensions ============
 
 function parse2D(data) {
     return data.trim().split('\n').map(row => row.split(''))
 }
+
+Array.prototype.toSet = function () { return new Set(this) }
 
 Array.prototype.toMap = function (fnKey, fnValue) {
     let map = new Map()
