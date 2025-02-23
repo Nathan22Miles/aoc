@@ -53,7 +53,7 @@ function nextElements(element, blueprint) {
 let part1 = 0
 // let part2 = 1
 
-const _breadth = 1000 // for my data 100 was big enough
+const _breadth = 200 // for my data 200 was big enough
 let i = 0
 
 for (let blueprint of blueprints) {
@@ -62,11 +62,22 @@ for (let blueprint of blueprints) {
     let initialElement = [[0, 0, 0, 0], [0, 0, 0, 1]]
     let nextElementsFn = (element) => nextElements(element, blueprint)
     let elements = runBFS(initialElement, key, nextElementsFn, _breadth, 24)
-    let qty = elements.map(element => element[0][0]).max()
+    let geodes = elements.map(element => element[0][0]).max()
 
-    log(i, qty)
-    part1 += qty * i
-    // part2 *= run(blueprint, 32) if i<4 else 1
+    log(i, geodes)
+    part1 += geodes * i
 }
 
 log(part1)
+
+let part2 = 1
+for (let blueprint of blueprints.slice(0,3)) {
+    let initialElement = [[0, 0, 0, 0], [0, 0, 0, 1]]
+    let nextElementsFn = (element) => nextElements(element, blueprint)
+    let elements = runBFS(initialElement, key, nextElementsFn, _breadth, 32)
+    
+    let geodes = elements.map(element => element[0][0]).max()
+    part2 = geodes * part2
+}
+
+log(part2)
