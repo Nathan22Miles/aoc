@@ -12,11 +12,11 @@ const { traceFn, memoize, Maze, Graph, PriorityQueue,
 
 process.chdir('/Users/nmiles/source/aoc/2022/day19')
 
-function runBFS(initialElement, keyFn, nextElementsFn, valueFn, breadth, rounds) {
+function runBFS(initialElement, keyFn, nextElementsFn, breadth, rounds) {
     let todo = new PriorityQueue()
     todo.enqueue(initialElement, key(initialElement))
 
-    for (let round = rounds; round > 0; round--) {
+    for (let round = 0; round < rounds; ++round) {
         let _todo = new PriorityQueue()                      // Queue for the next minute.
         let processed = 0
         let previousKey = ''
@@ -27,7 +27,7 @@ function runBFS(initialElement, keyFn, nextElementsFn, valueFn, breadth, rounds)
             previousKey = key
 
             ++processed
-            for (let nextElement of nextElementsFn(element)) {
+            for (let nextElement of nextElementsFn(element, round)) {
                 _todo.enqueue(nextElement, keyFn(nextElement))
             }
         }
@@ -35,13 +35,12 @@ function runBFS(initialElement, keyFn, nextElementsFn, valueFn, breadth, rounds)
         todo = _todo
     }
 
-    let _max = -Infinity
+    let elements = []
     while (!todo.isEmpty()) {
-        let { vertex: _element } = todo.dequeue()
-        _max = Math.max(_max, valueFn(_element))
+        elements.push(todo.dequeue().vertex)
     }
 
-    return _max
+    return elements
 }
 
 let data = fs.readFileSync('data.txt', 'utf8')
@@ -93,9 +92,9 @@ for (let blueprint of blueprints) {
 
     let initialElement = [[0, 0, 0, 0], [0, 0, 0, 1]]
     let nextElementsFn = (element) => nextElements(element, blueprint)
-    let valueFn = (element) => element[0][0]
-    let qty = runBFS(initialElement, key, nextElementsFn, valueFn, _breadth, 24)
-    
+    let elements = runBFS(initialElement, key, nextElementsFn, _breadth, 24)
+    let qty = elements.map(element => element[0][0]).max()
+
     log(i, qty)
     part1 += qty * i
     // part2 *= run(blueprint, 32) if i<4 else 1
