@@ -6,42 +6,11 @@ const log = console.log
 
 const { traceFn, memoize, Maze, Graph, PriorityQueue,
     rng, rng2, sfy, ssfy, pad, parse2D, make2D, lengthFn, sizeFn, modulo,
-    lcm, gcd, solveLinear, parseIntFn } = require('../../utils')
+    lcm, gcd, solveLinear, parseIntFn, runBFS } = require('../../utils')
 
 // https://adventofcode.com/2022/day/19
 
 process.chdir('/Users/nmiles/source/aoc/2022/day19')
-
-function runBFS(initialElement, keyFn, nextElementsFn, breadth, rounds) {
-    let todo = new PriorityQueue()
-    todo.enqueue(initialElement, key(initialElement))
-
-    for (let round = 0; round < rounds; ++round) {
-        let _todo = new PriorityQueue()                      // Queue for the next minute.
-        let processed = 0
-        let previousKey = ''
-
-        while (processed < breadth && !todo.isEmpty()) {
-            let { vertex: element, priority: key } = todo.dequeue()
-            if (key === previousKey) { continue }
-            previousKey = key
-
-            ++processed
-            for (let nextElement of nextElementsFn(element, round)) {
-                _todo.enqueue(nextElement, keyFn(nextElement))
-            }
-        }
-
-        todo = _todo
-    }
-
-    let elements = []
-    while (!todo.isEmpty()) {
-        elements.push(todo.dequeue().vertex)
-    }
-
-    return elements
-}
 
 let data = fs.readFileSync('data.txt', 'utf8')
 let testData = fs.readFileSync('testData.txt', 'utf8')
@@ -84,7 +53,7 @@ function nextElements(element, blueprint) {
 let part1 = 0
 // let part2 = 1
 
-const _breadth = 1000
+const _breadth = 1000 // for my data 100 was big enough
 let i = 0
 
 for (let blueprint of blueprints) {

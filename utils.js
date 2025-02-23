@@ -293,6 +293,14 @@ Array.prototype.addRow = function (r, cellValue = '.') {
     return this
 }
 
+Array.prototype.add = function (that) {
+    return this.map((x, i) => x + that[i])
+}
+
+Array.prototype.sub = function (that) {
+    return this.map((x, i) => x - that[i])
+}
+
 Array.prototype.column = function (c) { return this.map(row => row[c]) }
 
 Array.prototype.transpose = function () {
@@ -950,10 +958,51 @@ function solveLinear(a1, b1, c1, a2, b2, c2) {
     return [ x, y ]
 }
 
+/* Run breadth first search for n rounds.
+ * initialElement: The initial search element.
+ * keyFn(element): Function to compute the key for an element.
+ *     Equal elements must have the same key.
+ *     Elements with lower keys are processed first.
+ * nextElementsFn(element, round): Function to compute the next elements.
+ * breadth: Number of elements to process in each round.
+ */
+function runBFS(initialElement, keyFn, nextElementsFn, breadth, rounds) {
+    let todo = new PriorityQueue()
+    todo.enqueue(initialElement, keyFn(initialElement))
+
+    for (let round = 0; round < rounds; ++round) {
+        let _todo = new PriorityQueue()                      // Queue for the next minute.
+        let processed = 0
+        let previousKey = ''
+
+        while (processed < breadth && !todo.isEmpty()) {
+            let { vertex: element, priority: key } = todo.dequeue()
+            if (key === previousKey) { continue }
+            previousKey = key
+
+            ++processed
+            for (let nextElement of nextElementsFn(element, round)) {
+                _todo.enqueue(nextElement, keyFn(nextElement))
+            }
+        }
+
+        todo = _todo
+    }
+
+    let elements = []
+    while (!todo.isEmpty()) {
+        elements.push(todo.dequeue().vertex)
+    }
+
+    return elements
+}
+
+
+
 module.exports = {
     traceFn, memoize, Maze, Graph, PriorityQueue, rng, rng2, 
     sfy, ssfy, pad, parse2D, make2D, modulo,
     lengthFn, sizeFn, parseIntFn, parseFloatFn,
     segmentOverlap, isPointInPolygon, calculatePolygonArea,
-    gcd, lcm, Comp, isInt, solveLinear,
+    gcd, lcm, Comp, isInt, solveLinear, runBFS,
 }
