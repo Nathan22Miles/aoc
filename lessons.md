@@ -18,3 +18,7 @@ You can use a bit mask as 32 or smaller member set
 Reduce the problem to just the decision points and use DFS on them
 
 Floyd–Warshall algorithm for all point pairs shortest distance. O(v**3)
+
+Can parse by splitting into parts and using fixed offsets
+
+If your code makes assumptions about data content, e.g. range values, of input data ... make sure you verify those assumption ... otherwise your code might work for test data but fail for actual data.
