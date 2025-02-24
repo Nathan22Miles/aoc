@@ -851,7 +851,6 @@ function isInt(str) {
 
 class Comp {
     constructor({ id, type, inputs, outputs }) {
-        assert(type)
         this.type = type
 
         assert(id)
