@@ -20,45 +20,17 @@ let testData = fs.readFileSync('testData.txt', 'utf8')
 
 Comp.parse(data, /(?<id>\w+): (?<input1>\S+) ?(?<type>\S)? ?(?<input2>\S+)?/)
 
-function eval(id) {
+function fold(id) {
     let comp = Comp.get(id)
     assert(comp)
     let { type, inputs } = comp
     let [input1, input2] = inputs
 
-    if (!type) {
-        // throw an error if input1 is not all decimal digits
-        if (input1.match(/\D/)) {
-            throw new Error('Unknown input: ' + input1)
-        }
-        return parseInt(input1)
-    }
+    if (!type) { return input1 }
 
-    switch (type) {
-        case '+':
-            return eval(input1) + eval(input2)
-        case '-':
-            return eval(input1) - eval(input2)
-        case '*':
-            return eval(input1) * eval(input2)
-        case '/':
-            return eval(input1) / eval(input2)
-        default:
-            throw new Error('Unknown type: ' + type)
-    }
+    return `(${fold(input1)}${type}${fold(input2)})`
 }
 
-function dependent(comp) {
-    if (!comp.type) return false
-    if (comp.inputs.includes('humn')) return true
-    return comp.inputs.some(input => dependent(Comp.get(input)))
-}
-
-log('op components', Comp.comps().filter(c => c.type).length)
-log('dependent components', Comp.comps()
-        .map(c => dependent(c))
-        .filter(Boolean)
-        .length)
-
-// log(eval('root'))
+// paste this output into live.sympy.org to get answer
+log(fold('root'))
 
