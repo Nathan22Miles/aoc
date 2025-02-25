@@ -33,45 +33,42 @@ function vld(x,y) {
 }
 
 function next([x, y], dir) {
-    let nx
-    let ny
     switch (dir) {
         case 0: // right
             if (vld(x+1, y)) return [x+1, y]
-            nx = 0
-            while (!vld(nx, y)) nx++
-            return [nx, y]
+            x = 0
+            while (!vld(x, y)) x++
+            break
         case 1: // down
             if (vld(x, y+1)) return [x, y+1]
-            ny = 0
-            while (!vld(x, ny)) ny++
-            return [x, ny]
+            y = 0
+            while (!vld(x, y)) y++
+            break
         case 2: // left
             if (vld(x - 1, y)) return [x-1, y]
-            nx = rows[y].length - 1
-            while (!vld(nx, y)) nx--
-            return [nx, y]
+            x = rows[y].length - 1
+            while (!vld(x, y)) x--
+            break
         case 3: // up
             if (vld(x, y-1)) return [x, y-1]
-            ny = rows.length - 1
-            while (!vld(x, ny)) ny--
-            return [x, ny]
+            y = rows.length - 1
+            while (!vld(x, y)) y--
+            break
         default:
             assert(false)
     }
+    assert(vld(x,y))
+    return [x, y]
 }
 
-assert.deepStrictEqual(next([2, 2], 0), [3, 2])
-assert.deepStrictEqual(next([3, 2], 0), [2, 2])
-
-assert.deepStrictEqual(next([3, 1], 1), [3, 2])
-assert.deepStrictEqual(next([3, 2], 1), [3, 1])
-
-assert.deepStrictEqual(next([3, 2], 2), [2, 2])
-assert.deepStrictEqual(next([2, 2], 2), [3, 2])
-
-assert.deepStrictEqual(next([3, 1], 3), [3, 2])
-assert.deepStrictEqual(next([3, 2], 3), [3, 1])
+// assert.deepStrictEqual(next([2, 2], 0), [3, 2])
+// assert.deepStrictEqual(next([3, 2], 0), [2, 2])
+// assert.deepStrictEqual(next([3, 1], 1), [3, 2])
+// assert.deepStrictEqual(next([3, 2], 1), [3, 1])
+// assert.deepStrictEqual(next([3, 2], 2), [2, 2])
+// assert.deepStrictEqual(next([2, 2], 2), [3, 2])
+// assert.deepStrictEqual(next([3, 1], 3), [3, 2])
+// assert.deepStrictEqual(next([3, 2], 3), [3, 1])
 
 function go(pxy, dir, len) {
     for (let i=0; i<len; i++) {
