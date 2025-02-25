@@ -21,59 +21,39 @@ data = fs.readFileSync('test.txt', 'utf8') // unit test
 let [map, path] = data.split('\n\n')
 let rows = map.split('\n').map(row => row.split(''))
 
-let _dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+function vld(cc) { return cc !== undefined && cc !== ' ' }
+function wall(cr) { return fetch(cr) === '#' }
+function fetch([c, r]) { return rows[r][c] }
+
+let colLengths = rows.map(row => row.length).max()
+
+let rowFls = rows.map(row => row.findFirstAndLast(vld))
+let colFls = rng(colLengths)
+                .map(c => rows.map(row => row[c])
+                .findFirstAndLast(vld))
+
+let moves = [
+    ([c, r]) => c < rowFls[r].last ? [c+1, r] : [rowFls[r].first, r], // right
+    ([c, r]) => r < colFls[c].last ? [c, r+1] : [c, colFls[c].first], // down
+    ([c, r]) => c > rowFls[r].first ? [c-1, r] : [rowFls[r].last, r], // left
+    ([c, r]) => r > colFls[c].first ? [c, r-1] : [c, colFls[c].last], // up
+]
+
+assert.deepStrictEqual(moves[0]([2, 2]), [3, 2])
+assert.deepStrictEqual(moves[0]([3, 2]), [2, 2])
+assert.deepStrictEqual(moves[1]([3, 1]), [3, 2])
+assert.deepStrictEqual(moves[1]([3, 2]), [3, 1])
+assert.deepStrictEqual(moves[2]([3, 2]), [2, 2])
+assert.deepStrictEqual(moves[2]([2, 2]), [3, 2])
+assert.deepStrictEqual(moves[3]([3, 1]), [3, 2])
+assert.deepStrictEqual(moves[3]([3, 2]), [3, 1])
+
 let _dir = 0
 
-
-function vld(x,y) {
-    if (y < 0 || y >= rows.length) return false
-    if (x < 0 || x >= rows[y].length) return false
-    if (rows[y][x] === ' ') return false
-    return true
-}
-
-function next([x, y], dir) {
-    switch (dir) {
-        case 0: // right
-            if (vld(x+1, y)) return [x+1, y]
-            x = 0
-            while (!vld(x, y)) x++
-            break
-        case 1: // down
-            if (vld(x, y+1)) return [x, y+1]
-            y = 0
-            while (!vld(x, y)) y++
-            break
-        case 2: // left
-            if (vld(x - 1, y)) return [x-1, y]
-            x = rows[y].length - 1
-            while (!vld(x, y)) x--
-            break
-        case 3: // up
-            if (vld(x, y-1)) return [x, y-1]
-            y = rows.length - 1
-            while (!vld(x, y)) y--
-            break
-        default:
-            assert(false)
-    }
-    assert(vld(x,y))
-    return [x, y]
-}
-
-// assert.deepStrictEqual(next([2, 2], 0), [3, 2])
-// assert.deepStrictEqual(next([3, 2], 0), [2, 2])
-// assert.deepStrictEqual(next([3, 1], 1), [3, 2])
-// assert.deepStrictEqual(next([3, 2], 1), [3, 1])
-// assert.deepStrictEqual(next([3, 2], 2), [2, 2])
-// assert.deepStrictEqual(next([2, 2], 2), [3, 2])
-// assert.deepStrictEqual(next([3, 1], 3), [3, 2])
-// assert.deepStrictEqual(next([3, 2], 3), [3, 1])
-
-function go(pxy, dir, len) {
-    for (let i=0; i<len; i++) {
-        let npxy = next(pxy, dir)
-        if (fetch(npxy) === '#') return pxy
-        pxy = npxy
-    }
-}
+// function go(pxy, dir, len) {
+//     for (let i=0; i<len; i++) {
+//         let npxy = next(pxy, dir)
+//         if (fetch(npxy) === '#') return pxy
+//         pxy = npxy
+//     }
+// }

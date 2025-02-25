@@ -257,6 +257,19 @@ Array.prototype.toString = function () {
     return text
 }
 
+Array.prototype.findFirstAndLast = function (fn) {
+    let first = this.findIndex(fn)
+    let last = this.findLastIndex(fn)
+    return { first, last }
+}
+
+Array.prototype.findLastIndex = function (fn) {
+    for (let i = this.length - 1; i >= 0; i--) {
+        if (fn(this[i])) return i
+    }
+    return -1
+}
+
 // Following functions assume array is is2D
 
 Array.prototype.rcs = function () {
