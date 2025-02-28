@@ -351,8 +351,20 @@ Array.prototype.rotateLeft = function () {
     return this // Return the modified array (for chaining).
 }
 
-// solve linear equation
+Array.prototype.bounds2D = function () {
+    let left = this.map(([c, r]) => c).min()
+    let right = this.map(([c, r]) => c).max()
+    let top = this.map(([c, r]) => r).min()
+    let bottom = this.map(([c, r]) => r).max()
+    return { left, right, top, bottom }
+}
 
+Array.prototype.normalize2D = function () {
+    let left = this.map(([c, r]) => c).min()
+    let top = this.map(([c, r]) => r).min()
+    this.forEach(([c, r], i) => elves[i] = [c - left, r - top])
+}
+    
 // ============ Graph ============
 
 class Graph {
@@ -1028,6 +1040,7 @@ class JSet {
 
         if (iterable) {
             for (const item of iterable) {
+                if (item === undefined || item === null) continue
                 this.add(item)
             }
         }
