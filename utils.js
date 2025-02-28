@@ -340,6 +340,17 @@ Array.prototype.categorize = function () {
     return [result, categories]
 }
 
+Array.prototype.rotateLeft = function () {
+    if (this.length <= 1) {
+        return this // Nothing to rotate if the array has 0 or 1 element.
+    }
+
+    const firstElement = this.shift() // Remove the first element and store it.
+    this.push(firstElement) // Add the removed element to the end.
+
+    return this // Return the modified array (for chaining).
+}
+
 // solve linear equation
 
 // ============ Graph ============
@@ -1009,12 +1020,211 @@ function runBFS(initialElement, keyFn, nextElementsFn, breadth, rounds) {
     return elements
 }
 
+class JSet {
+    constructor(iterable = null) {
+        this._data = {} // Use a plain object as the underlying storage
+        this.size = 0  // Maintain the size property
+        this._counts = {} // Keep track of counts for each object
 
+        if (iterable) {
+            for (const item of iterable) {
+                this.add(item)
+            }
+        }
+    }
+
+    add(value) {
+        const key = JSON.stringify(value)  // Stringify the value to use as a key
+        if (!this._data.hasOwnProperty(key)) {
+            this._data[key] = value // Store the original value for iteration
+            this.size++
+            this._counts[key] = 1 // Initialize count to 1
+            return this // For chaining, like the native Set
+        } else {
+            this._counts[key]++ // Increment the count
+            return this // Value already exists
+        }
+    }
+
+    clear() {
+        this._data = {}
+        this.size = 0
+        this._counts = {}
+    }
+
+    delete(value) {
+        const key = JSON.stringify(value)
+        if (this._data.hasOwnProperty(key)) {
+            delete this._data[key]
+            this.size--
+            delete this._counts[key] // Remove the count
+            return true
+        }
+        return false
+    }
+
+    has(value) {
+        const key = JSON.stringify(value)
+        return this._data.hasOwnProperty(key)
+    }
+
+    forEach(callbackFn, thisArg = null) {
+        for (const key in this._data) {
+            if (this._data.hasOwnProperty(key)) {
+                callbackFn.call(thisArg, this._data[key], this._data[key], this) // Similar to native Set's forEach arguments
+            }
+        }
+    }
+
+    * entries() {
+        for (const key in this._data) {
+            if (this._data.hasOwnProperty(key)) {
+                yield [this._data[key], this._data[key]] // Sets have key and value the same
+            }
+        }
+    }
+
+    * keys() {
+        for (const key in this._data) {
+            if (this._data.hasOwnProperty(key)) {
+                yield this._data[key] // Sets have key and value the same
+            }
+        }
+    }
+
+    * values() {
+        for (const key in this._data) {
+            if (this._data.hasOwnProperty(key)) {
+                yield this._data[key]
+            }
+        }
+    }
+
+    [Symbol.iterator]() {
+        return this.values()  // Default iterator is the values iterator
+    }
+
+    get [Symbol.toStringTag]() {
+        return 'JSet' // Correct toStringTag
+    }
+
+    // Optional:  Support for `Set.prototype.constructor === JSet`
+    static get [Symbol.species]() {
+        return JSet
+    }
+
+    /**
+     * Returns the number of times an object has been added to the set.
+     *
+     * @param {any} value The object to check.
+     * @returns {number} The number of times the object has been added.  Returns 0 if the object is not in the set.
+     */
+    count(value) {
+        const key = JSON.stringify(value)
+        return this._counts[key] || 0
+    }
+}
+
+class JMap {
+    constructor(iterable = null) {
+        this._data = {} // Use a plain object to store key-value pairs.  Keys will be stringified JSON.
+        this.size = 0 // Keep track of the number of entries.
+
+        if (iterable) {
+            for (const [key, value] of iterable) {
+                this.set(key, value)
+            }
+        }
+    }
+
+    set(key, value) {
+        const stringKey = JSON.stringify(key) // Stringify the key for storage.
+
+        if (!this._data.hasOwnProperty(stringKey)) {
+            this.size++
+        }
+
+        this._data[stringKey] = value  //Store the value
+        return this // For chaining
+    }
+
+    get(key) {
+        const stringKey = JSON.stringify(key)
+        return this._data.hasOwnProperty(stringKey) ? this._data[stringKey] : undefined
+    }
+
+    has(key) {
+        const stringKey = JSON.stringify(key)
+        return this._data.hasOwnProperty(stringKey)
+    }
+
+    delete(key) {
+        const stringKey = JSON.stringify(key)
+        if (this._data.hasOwnProperty(stringKey)) {
+            delete this._data[stringKey]
+            this.size--
+            return true
+        }
+        return false
+    }
+
+    clear() {
+        this._data = {}
+        this.size = 0
+    }
+
+    forEach(callbackFn, thisArg = null) {
+        for (const stringKey in this._data) {
+            if (this._data.hasOwnProperty(stringKey)) {
+                const key = JSON.parse(stringKey) // Parse the original key from JSON
+                callbackFn.call(thisArg, this._data[stringKey], key, this)
+            }
+        }
+    }
+
+    * entries() {
+        for (const stringKey in this._data) {
+            if (this._data.hasOwnProperty(stringKey)) {
+                const key = JSON.parse(stringKey) // Parse the original key from JSON
+                yield [key, this._data[stringKey]]
+            }
+        }
+    }
+
+    * keys() {
+        for (const stringKey in this._data) {
+            if (this._data.hasOwnProperty(stringKey)) {
+                const key = JSON.parse(stringKey)  // Parse the original key from JSON
+                yield key
+            }
+        }
+    }
+
+    * values() {
+        for (const stringKey in this._data) {
+            if (this._data.hasOwnProperty(stringKey)) {
+                yield this._data[stringKey]
+            }
+        }
+    }
+
+    [Symbol.iterator]() {
+        return this.entries() // Default iterator is the entries iterator
+    }
+
+    get [Symbol.toStringTag]() {
+        return 'JsonStringMap' // Correct toStringTag
+    }
+
+    static get [Symbol.species]() {
+        return JsonStringMap
+    }
+}
 
 module.exports = {
     traceFn, memoize, Maze, Graph, PriorityQueue, rng, rng2, 
     sfy, ssfy, pad, parse2D, make2D, modulo,
     lengthFn, sizeFn, parseIntFn, parseFloatFn,
     segmentOverlap, isPointInPolygon, calculatePolygonArea,
-    gcd, lcm, Comp, isInt, solveLinear, runBFS,
+    gcd, lcm, Comp, isInt, solveLinear, runBFS, JSet, JMap
 }

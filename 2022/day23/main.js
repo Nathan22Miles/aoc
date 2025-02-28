@@ -68,9 +68,7 @@ function round(elves, _round) {
         elves[i] = p
     }
 
-    let p0 = proposeds[0]
-    proposeds = proposeds.slice(1)
-    proposeds.push(p0)
+    proposeds.rotateLeft()
 
     return moved
 }
