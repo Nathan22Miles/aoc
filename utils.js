@@ -364,6 +364,10 @@ Array.prototype.normalize2D = function () {
     let top = this.map(([c, r]) => r).min()
     this.forEach(([c, r], i) => elves[i] = [c - left, r - top])
 }
+
+Array.prototype.dist = function (that) {
+    return Math.abs(this[0] - that[0]) + Math.abs(this[1] - that[1])
+}
     
 // ============ Graph ============
 
@@ -1005,7 +1009,8 @@ function runBFS(initialElement, keyFn, nextElementsFn, breadth, rounds) {
     let todo = new PriorityQueue()
     todo.enqueue(initialElement, keyFn(initialElement))
 
-    for (let round = 0; round < rounds; ++round) {
+    for (let round = 0; ; ++round) {
+        log('round=', round+1)
         let _todo = new PriorityQueue()                      // Queue for the next minute.
         let processed = 0
         let previousKey = ''
@@ -1022,8 +1027,13 @@ function runBFS(initialElement, keyFn, nextElementsFn, breadth, rounds) {
         }
 
         todo = _todo
+
+        // if rounds is a function, call it
+        if (typeof rounds === 'function' && rounds()) { break }
+        else if (round > rounds) { break}
     }
 
+    // Create prioritized lists of elements by unstacking heap into elements
     let elements = []
     while (!todo.isEmpty()) {
         elements.push(todo.dequeue().vertex)
