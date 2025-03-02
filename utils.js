@@ -66,6 +66,13 @@ Map.prototype.groupBy = function (values, fieldOrFn) {
     return this
 }
 
+Map.prototype.tally = function (key, count=1) {
+    let _count = this.get(key) ?? 0
+    this.set(key, _count + count)
+
+    return this
+}
+
 Map.prototype.countBy = function (values, fieldOrFn) {
     for (let value of values) {
         let key
@@ -106,6 +113,18 @@ Set.prototype.andNot = function (otherSet) {
 Set.prototype.toArray = function () { return [...this] }
 
 // ============ Array extensions ============
+
+Array.prototype.logRCs = function (normalize) {
+    let _this = this.slice()
+    if (normalize) _this.normalize2D()
+    let { right, bottom } = _this.bounds2D()
+
+    let _map = make2D(bottom + 1, right + 1, '.')
+    _this.forEach(([c, r]) => _map[r][c] = '#')
+    let rows = _map.map(row => row.join(''))
+    log(rows.join('\n'))
+    log('.')
+}
 
 function parse2D(data) {
     return data.trim().split('\n').map(row => row.split(''))
