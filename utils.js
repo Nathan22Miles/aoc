@@ -384,8 +384,23 @@ Array.prototype.normalize2D = function () {
     this.forEach(([c, r], i) => elves[i] = [c - left, r - top])
 }
 
+/** Compute Manhattan distance between two vectors */
 Array.prototype.dist = function (that) {
-    return Math.abs(this[0] - that[0]) + Math.abs(this[1] - that[1])
+    let dist = 0
+    for (let i = 0; i < this.length; i++) {
+        dist += Math.abs(this[i] - that[i])
+    }
+    return dist
+}
+
+/** Compare two equal length vectors */
+Array.prototype.cmp = function (that) {
+    assert(this.length === that.length)
+    for (let i = 0; i < this.length; i++) {
+        if (this[i] < that[i]) return -1
+        if (this[i] > that[i]) return 1
+    }
+    return 0
 }
     
 // ============ Graph ============
