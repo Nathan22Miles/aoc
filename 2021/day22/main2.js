@@ -38,15 +38,6 @@ class Cube {
         if (x1 > x2 || y1 > y2 || z1 > z2) { return null }
         return new Cube(x1, x2, y1, y2, z1, z2)
     }
-
-    eq(b) {
-        return this.x1 === b.x1 
-            && this.x2 === b.x2 
-            && this.y1 === b.y1 
-            && this.y2 === b.y2 
-            && this.z1 === b.z1 
-            && this.z2 === b.z2
-    }
 }
 
 function parse(line) {  // {state: boolean, cube: Cube}
