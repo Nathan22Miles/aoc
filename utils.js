@@ -242,7 +242,7 @@ Array.prototype.pairs = function () {
 
 Array.prototype.crosses = function (that) {
     let crosses = []
-    for (let i = 0; i < this.length - 1; i++) {
+    for (let i = 0; i < this.length; i++) {
         for (let j = 0; j < that.length; j++) {
             crosses.push([this[i], that[j]])
         }
