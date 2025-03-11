@@ -95,31 +95,25 @@ function showMap(depth, map, best) {
     // log(depth, '\n', [_halls, _h1, _h2].join('\n'))
 }
 
+
 function atGoal(i, map) {
     if (map[i] !== i2goal.get(i)) return false
-    if (i%2 === 0) return true
-    return map[i+1] === i2goal.get(i+1)
+    if (i % 2 === 0) return true
+    return map[i + 1] === i2goal.get(i + 1)
 }
+
+function goalCount(map) {
+    return [11, 12, 13, 14, 15, 16, 17, 18].map(i => atGoal(i, map) ? 1 : 0).sum()
+}
+
 function isDone(map) {
     return [11, 12, 13, 14, 15, 16, 17, 18].every(i => map[i] === i2goal.get(i))
 }
 
-let memo = new JMap()
+function nexts([map, cost]) {
+    if (isDone(map)) return [map, cost, true]
 
-let _depth = 0
-function search(map, cost, best, depth) {
-    let __best = memo.get(map)
-    if (__best) return __best
-
-    if (isDone(map)) {
-        let _cost = Math.min(best, cost)
-        if (_cost < best) log(_cost)
-        return _cost
-    }
-
-    let _best
-    
-    if (cost >= best) return best
+    let nexts = []
 
     // try ins
     for (let i of [0, 1, 3, 5, 7, 9, 10]) {
@@ -137,9 +131,7 @@ function search(map, cost, best, depth) {
             let _map = map.slice()
             _map[i] = 0
             _map[jTarget] = mover;
-            // showMap(depth, _map, best)
-            _best = search(_map, cost + _cost, best, depth+1)
-            best = Math.min(best, _best)
+            nexts.push([_map, cost+_cost])
         }
     }
 
@@ -159,10 +151,7 @@ function search(map, cost, best, depth) {
             let _map = map.slice()
             _map[i] = 0
             _map[jTarget] = mover
-            // showMap(depth, _map, best);
-            
-            _best = search(_map, cost + _cost, best, depth + 1)
-            best = Math.min(best, _best)
+            nexts.push([_map, cost + _cost])
         }
     }
 
@@ -182,16 +171,52 @@ function search(map, cost, best, depth) {
             let _map = map.slice()
             _map[i] = 0
             _map[jTarget] = mover;
-            // showMap(depth, _map);
-            _best = search(_map, cost + _cost, best, depth + 1)
-            best = Math.min(best, _best)
+            nexts.push([_map, cost + _cost])
         }
     }
 
-    memo.set(map, best)
-
-    return best
+    return nexts
 }
 
-let best = search(map, 0, Infinity, 0)
-log(best) // 12521 testData, 13558 data
+function addTodo(todos, map, cost) {
+    let _cost = todos.get(map) ?? Infinity
+    if (cost < _cost) {
+        todos.set(map, cost)
+    }
+}
+
+let best = Infinity
+
+function runBFS(_map) {
+    let todos = new JMap([[_map, 0]])
+
+    for (let round = 0; ; ++round) {
+        log('round=', round+1, todos.size)
+
+        let _todos = new JMap()
+        let maps = [...todos.keys()] 
+        if (maps.length === 0) break
+
+        for (let map of maps) {
+            for (let next of nexts([map, todos.get(map)])) {
+                let [map, cost] = next
+                if (cost >= best) continue
+
+                if (isDone(map)) {
+                    best = cost
+                    log('*** best=', best)
+                    continue
+                }
+
+                addTodo(_todos, map, cost)
+            }
+        } 
+        todos = _todos              
+    }
+}
+
+runBFS(map, 0)
+log('done', best)
+
+
+// log(best) // 12521 testData, 13558 data
