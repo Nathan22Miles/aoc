@@ -25,3 +25,5 @@ If your code makes assumptions about data content, e.g. range values, of input d
 
 To solve an equation paste the following into live.sympy.org
 solve(x*x-4)   # x,y,z floats; k,m,n integers
+
+If a search problem has <100000 possible states, bfs may work better than dfs --- because it may be easier to avoid duplicate paths

@@ -124,6 +124,7 @@ function clearPath(path, map) {
     return path.every(i => !map[i])
 }
 
+// testData
 let map = [0,0,0,0,0,0,0,0,0,0,0,
     2,4,4,1,
     3,3,2,4,
@@ -131,20 +132,13 @@ let map = [0,0,0,0,0,0,0,0,0,0,0,
     4,1,3,1,
 ]
 
+// real data
 map = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 4, 4, 3, 
     2, 3, 2, 4, 
     1, 2, 1, 1, 
     4, 1, 3, 2,
 ]
-
-function showMap(depth, map, best) {
-    // if (best && best!==Infinity) log(best)
-    // let _halls = map.slice(0, 11).map(x => x.toString()).join('')
-    // let _h1 = `   ${map[11]} ${map[13]} ${map[15]} ${map[17]}`
-    // let _h2 = `   ${map[12]} ${map[14]} ${map[16]} ${map[18]}`
-    // log(depth, '\n', [_halls, _h1, _h2].join('\n'))
-}
 
 let iRooms = rooms.map(pt => rc2i.get(pt))
 let iHalls = halls.map(pt => rc2i.get(pt))
