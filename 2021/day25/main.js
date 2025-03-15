@@ -16,37 +16,46 @@ let data = fs.readFileSync('data.txt', 'utf8')
 let testData = fs.readFileSync('testData.txt', 'utf8')
 // data = testData
 
-let _m = new Maze(data)
-let { r: _r, c: _c, m } = _m
+class Wrap2 {
+    constructor(data) {
+        this.m = data.split('\n').map(line => line.split(''))
+        this._r = this.m.length
+        this._c = this.m[0].length
+    }
+
+    _(r, c) {
+        return this.m[r % this._r][c % this._c]
+    }
+
+    set(r, c, val) {
+        this.m[r % this._r][c % this._c] = val
+    }
+}
+
+let wrap = new Wrap2(data)
+let {_r, _c} = wrap
+
+let get = (r, c) => wrap._(r, c)
+let set = (r, c, val) => wrap.set(r, c, val)
 
 function moveEast(r) {
-    let p0 = _m.rc2p([r, 0])
-    let pLast = p0 + _c
-    function next(p) { return p + 1 < pLast ? p + 1 : p0 }
-    let moves = rng(_c).map(c => [p0+c, next(p0+c)])
-        .filter(([p, pn]) => m[p] === '>' && m[pn] === '.')
+    let columns = rng(_c).filter(c => get(r, c) === '>' && get(r,c+1) === '.')
 
-    for (let [p, pn] of moves) {
-        m[p] = '.'
-        m[pn] = '>'
+    for (let c of columns) {
+        set(r, c, '.')
+        set(r, c+1, '>')
     }
-    return moves.length > 0
+    return columns.length > 0
 }
 
 function moveSouth(c) {
-    let p0 = _m.rc2p([0, c])
-    let pLast = _m.rc2p([_r, c])
-    
-    function next(p) { return p + _c < pLast ? p + _c : p0 }
+    let rows = rng(_r).filter(r => get(r, c) === 'v' && get(r+1, c) === '.')
 
-    let moves = rng(_r).map(r => [p0 + r*_c, next(p0 + r*_c)])
-        .filter(([p, pn]) => m[p] === 'v' && m[pn] === '.')
-
-    for (let [p, pn] of moves) {
-        m[p] = '.'
-        m[pn] = 'v'
+    for (let r of rows) {
+        set(r, c, '.')
+        set(r+1, c, 'v')
     }
-    return moves.length > 0
+    return rows.length > 0
 }
 
 let steps = 0
