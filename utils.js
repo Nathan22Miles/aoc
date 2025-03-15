@@ -757,9 +757,9 @@ class Maze {
         let rowNum = 0
         for (let i = 0; i < ps.length; i += c) {
             let row = ps.slice(i, i + c).join('')
-            if (i === 0) {
-                row = row.slice(0, 9) + '|' + row.slice(10)
-            }
+            // if (i === 0) {
+            //     row = row.slice(0, 9) + '|' + row.slice(10)
+            // }
             rows.push(`${pad(rowNum)} ${pad(i, 5)} ${row}`)
             ++rowNum
         }
@@ -1278,10 +1278,39 @@ class JMap {
     }
 }
 
+function countFn(fn) {
+    let count = 0
+    while (fn()) {
+        ++count
+    }
+    return count
+}
+
+class Wrap2D {
+    constructor(data) {
+        this.m = data.split('\n').map(line => line.split(''))
+        this._r = this.m.length
+        this._c = this.m[0].length
+    }
+
+    _(r, c) { return this.m[r % this._r][c % this._c] }
+
+    set(r, c, val) { this.m[r % this._r][c % this._c] = val }
+
+    rc([r, c]) { return this._(r, c) }
+
+    setRc([r, c], val) { return this.set(r, c, val) }
+
+
+    rowRcs(r) { return rng(this._c).map(c => [r, c]) }
+
+    colRcs(c) { return rng(this._r).map(r => [r, c]) }
+}
+
 module.exports = {
     traceFn, memoize, Maze, Graph, PriorityQueue, rng, rng2, 
     sfy, ssfy, pad, parse2D, make2D, modulo,
     lengthFn, sizeFn, parseIntFn, parseFloatFn,
     segmentOverlap, isPointInPolygon, calculatePolygonArea,
-    gcd, lcm, Comp, isInt, solveLinear, runBFS, JSet, JMap
+    gcd, lcm, Comp, isInt, solveLinear, runBFS, JSet, JMap, countFn, Wrap2D
 }
