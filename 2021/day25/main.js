@@ -16,63 +16,38 @@ let data = fs.readFileSync('data.txt', 'utf8')
 let testData = fs.readFileSync('testData.txt', 'utf8')
 // data = testData
 
-class Wrap2 {
+class Wrap {
     constructor(data) {
         this.m = data.split('\n').map(line => line.split(''))
         this._r = this.m.length
         this._c = this.m[0].length
     }
 
-    _(r, c) {
-        return this.m[r % this._r][c % this._c]
-    }
+    _(r, c) { return this.m[r % this._r][c % this._c] }
 
-    set(r, c, val) {
-        this.m[r % this._r][c % this._c] = val
-    }
+    rc([r, c]) { return this._(r, c) }
+
+    setRc([r, c], val) { return this.set(r, c, val) }
+
+    set(r, c, val) { this.m[r % this._r][c % this._c] = val }
 }
 
-let wrap = new Wrap2(data)
-let {_r, _c} = wrap
+let w = new Wrap(data)
+let {_r, _c} = w
 
-let get = (r, c) => wrap._(r, c)
-let set = (r, c, val) => wrap.set(r, c, val)
+function canEast([r,c]) { return w.rc([r,c]) === '>' && w.rc([r, c+1]) === '.' }
+function moveEast([r,c]) { w.setRc([r,c], '.'); w.setRc([r,c+1], '>'); return 1 }
 
-function moveEast(r) {
-    let columns = rng(_c).filter(c => get(r, c) === '>' && get(r,c+1) === '.')
+function canSouth([r, c]) { return w.rc([r, c]) === 'v' && w.rc([r+1, c]) === '.' }
+function moveSouth([r, c]) { w.setRc([r, c], '.'); w.setRc([r+1, c], 'v'); return 1 }
 
-    for (let c of columns) {
-        set(r, c, '.')
-        set(r, c+1, '>')
-    }
-    return columns.length > 0
-}
+function moveRowEast(r) { return rng(_c).map(c => [r,c]).filter(canEast).map(moveEast) }
+function moveColSouth(c) { return rng(_r).map(r => [r,c]).filter(canSouth).map(moveSouth) }
 
-function moveSouth(c) {
-    let rows = rng(_r).filter(r => get(r, c) === 'v' && get(r+1, c) === '.')
-
-    for (let r of rows) {
-        set(r, c, '.')
-        set(r+1, c, 'v')
-    }
-    return rows.length > 0
-}
-
-let steps = 0
+let steps = 1
 while (true) {
+    if (rng(_r).map(moveRowEast).flat().length + rng(_c).map(moveColSouth).flat().length === 0) break 
     ++steps
-    let moved = false
-    for (let r of rng(_r)) {
-        moved = moveEast(r) || moved
-    }
-    for (let c of rng(_c)) {
-        moved = moveSouth(c) || moved
-    }
-    log(steps)
-    // log(_m.toString())
-    if (!moved) {
-        break
-    }
 }
 
 log(steps)
