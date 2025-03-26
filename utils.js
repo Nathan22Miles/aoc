@@ -284,7 +284,7 @@ Array.prototype.findFirstAndLast = function (fn) {
 
 Array.prototype.findLastIndex = function (fn) {
     for (let i = this.length - 1; i >= 0; i--) {
-        if (fn(this[i])) return i
+        if (fn(this[i], i, this)) return i
     }
     return -1
 }
