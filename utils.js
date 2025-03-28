@@ -42,7 +42,10 @@ String.prototype._match = function (regex, splitter = /\s*,\s*/) {
 Map.prototype.addToSet = function (key, value) {
     //                              [[key, value], ...]
     if (!this.has(key)) this.set(key, new Set())
-    this.get(key).add(value)
+    let set = this.get(key)
+    if (set.has(value)) return false
+    set.add(value)
+    return true
 }
 
 Map.prototype.push = function (key, value) {
