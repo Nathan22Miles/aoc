@@ -44,77 +44,60 @@ _rules.split('\n').forEach(line => {
 
 msgs = msgs.split('\n')
 
-function addTokens(ms, me, msg) {
+function join(id, start, end) { return `${id}_${start}_${end}` }
+
+function split(tok) {
+    let [id, start, end] = tok.split('_')
+    let istart = parseInt(start)
+    let iend = parseInt(end)
+    return {id, start, end, istart, iend}
+}
+
+function addTokens(q, ms, me, msg) {
     for (let i=0; i<msg.length; i++) {
         let c = msg[i]
         let idSet = rw.get(c)
         for (let id of idSet) {
-            ms.addToSet(i, `${id}_${i}_${i + 1}`)
-            me.addToSet(i + 1, `${id}_${i}_${i + 1}`)
+            const tok = join(id, i, i + 1)
+            q.push(tok)
+
+            ms.addToSet(i, tok)
+            me.addToSet(i + 1, tok)
         }
     }
 }
 
-function addSingles(ms, me, length) {
-    let added = 0
-    for (i=0; i<length; i++) {
-        let toks = ms.get(i) ?? []
-        for (let tok of toks) {
-            let [id, start, end] = tok.split('_')
-            let istart = parseInt(start)
-            let iend = parseInt(end)
+function addSingles(q, ms, me, tok) {
+    let { id, start, end, istart, iend } = split(tok)
 
-            let newIds = rw.get(id)
-            if (!newIds) continue
-            for (let newId of newIds) {
-                let newTok = `${newId}_${start}_${end}`
+    let newIds = rw.get(id) ?? new Set()
 
-                if (ms.addToSet(istart, newTok)) {
-                    added++
-                }
-                if (me.addToSet(iend, newTok)) {
-                    added++
-                }
-            }
+    for (let newId of newIds) {
+        let newTok = join(newId, start, end)
+
+        const add1 = ms.addToSet(istart, newTok)
+        const add2 = me.addToSet(iend, newTok)
+        if (add1 || add2) {
+            q.push(newTok)
         }
     }
-    return added
 }
 
-function addPairs(ms, me, length) {
-    let added = 0
-    for (i = 0; i < length; i++) {
-        let toks2 = ms.get(i)
-        let toks1 = me.get(i)
-        if (!toks1 || !toks2) continue
+function addPairs(q, ms, me, tok, tok2) {
+    let { id, start, end, istart, iend } = split(tok)
+    let { id: id2, start: start2, end: end2, istart: istart2, iend: iend2 } = split(tok2)
 
-        for (let tok1 of toks1) {
-            let [id1, start1, end1] = tok1.split('_')
-            let istart1 = parseInt(start1)
-            let iend1 = parseInt(end1)
+    let newIds = rw.get(`${id}_${id2}`) ?? new Set()
 
-            for (let tok2 of toks2) {
-                let [id2, start2, end2] = tok2.split('_')
-                let istart2 = parseInt(start2)
-                let iend2 = parseInt(end2)
+    for (let newId of newIds) {
+        let newTok = join(newId, start, end2)
 
-                let newIds = rw.get(`${id1}_${id2}`)
-                if (!newIds) continue
-
-                for (let newId of newIds) {
-                    let newTok = `${newId}_${start1}_${end2}`
-
-                    if (ms.addToSet(istart1, newTok)) {
-                        added++
-                    }
-                    if (me.addToSet(iend2, newTok)) {
-                        added++
-                    }
-                }
-            }
+        let add1 = ms.addToSet(istart, newTok)
+        let add2 = me.addToSet(iend2, newTok)
+        if (add1 || add2) {
+            q.push(newTok)
         }
     }
-    return added
 }
 
 function parse(msg) {
@@ -123,19 +106,32 @@ function parse(msg) {
     // a match is a string of the form id_start_end
     let ms = new Map()
     let me = new Map()
-    addTokens(ms, me, msg)
-    let goal = `0_0_${msg.length}`
+    let q = []
+    let goal = join(0, 0, msg.length)
+
+    addTokens(q, ms, me, msg)
     
-    while (true) {
-        let added = addSingles(ms, me, msg.length)
-        added += addPairs(ms, me, msg.length)
-        log(added)
-        if (ms.has(goal)) break
-        if (added === 0) break
+    while (q.length) {
+        let tok = q.pop()
+
+        addSingles(q, ms, me, tok)
+
+        let { istart, iend } = split(tok)
+        let toksBefore = me.get(istart) ?? new Set();
+        for (let tokBefore of toksBefore) {
+            addPairs(q, ms, me, tokBefore, tok)
+        }
+
+        let toksAfter = ms.get(iend) ?? new Set();
+        for (let tokAfter of toksAfter) {
+            addPairs(q, ms, me, tok, tokAfter)
+        }
     }
 
     // [...ms.get(0)].log()
-    return ms.get(0).has(goal) ? 1 : 0
+    let matched = ms.get(0).has(goal) ? 1 : 0
+    // log(matched, msg)
+    return matched
 }
 
 log(msgs.map(msg => parse(msg)).sum())
