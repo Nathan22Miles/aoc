@@ -292,54 +292,12 @@ Array.prototype.findLastIndex = function (fn) {
     return -1
 }
 
-// Following functions assume array is is2D
-
-Array.prototype.rcs = function () {
-    let r = this.length
-    let c = this[0].length
-    rcs = []
-    for (let i = 0; i < r; i++) {
-        for (let j = 0; j < c; j++) {
-            rcs.push([i, j])
-        }
-    }
-    return rcs
-}
-
-Array.prototype.deleteColumn = function (c) {
-    this.forEach(row => row.splice(c, 1))
-    return this
-}
-
-Array.prototype.deleteRow = function (r) {
-    this.splice(r, 1)
-    return this
-}
-
-// adds new column (row) BEFORE the specified column (row)
-Array.prototype.addColumn = function (c, cellValue = '.') {
-    this.forEach((row, r) => row.splice(c, 0, cellValue))
-    return this
-}
-Array.prototype.addRow = function (r, cellValue = '.') {
-    let c = this[0].length
-    let newRow = Array(c).fill(cellValue)
-    this.splice(r, 0, newRow)
-    return this
-}
-
 Array.prototype.add = function (that) {
     return this.map((x, i) => x + that[i])
 }
 
 Array.prototype.sub = function (that) {
     return this.map((x, i) => x - that[i])
-}
-
-Array.prototype.column = function (c) { return this.map(row => row[c]) }
-
-Array.prototype.transpose = function () {
-    return this[0].map((_, i) => this.map(row => row[i]))
 }
 
 Array.prototype.joinjoin = function (j1 = '', j2 = '\n') { return this.map(row => row.join(j1)).join(j2) }
@@ -373,20 +331,6 @@ Array.prototype.rotateLeft = function () {
     return this // Return the modified array (for chaining).
 }
 
-Array.prototype.bounds2D = function () {
-    let left = this.map(([c, r]) => c).min()
-    let right = this.map(([c, r]) => c).max()
-    let top = this.map(([c, r]) => r).min()
-    let bottom = this.map(([c, r]) => r).max()
-    return { left, right, top, bottom }
-}
-
-Array.prototype.normalize2D = function () {
-    let left = this.map(([c, r]) => c).min()
-    let top = this.map(([c, r]) => r).min()
-    this.forEach(([c, r], i) => elves[i] = [c - left, r - top])
-}
-
 /** Compute Manhattan distance between two vectors */
 Array.prototype.dist = function (that) {
     let dist = 0
@@ -405,6 +349,89 @@ Array.prototype.cmp = function (that) {
     }
     return 0
 }
+
+
+// Following functions assume array is is2D
+
+// iterate over all [row, col] pairs
+Array.prototype.rcs = function () { // 2D
+    let r = this.length
+    let c = this[0].length
+    rcs = []
+    for (let i = 0; i < r; i++) {
+        for (let j = 0; j < c; j++) {
+            rcs.push([i, j]) 
+        }
+    }
+    return rcs
+}
+
+Array.prototype.deleteColumn = function (c) { // 2D
+    this.forEach(row => row.splice(c, 1))
+    return this
+}
+
+Array.prototype.deleteRow = function (r) { // 2D
+    this.splice(r, 1)
+    return this
+}
+
+// adds new column (row) BEFORE the specified column (row)
+Array.prototype.addColumn = function (c, cellValue = '.') { // 2D
+    this.forEach((row, r) => row.splice(c, 0, cellValue))
+    return this
+}
+Array.prototype.addRow = function (r, cellValue = '.') { // 2D
+    let c = this[0].length
+    let newRow = Array(c).fill(cellValue)
+    this.splice(r, 0, newRow)
+    return this
+}
+
+Array.prototype.column = function (c) { return this.map(row => row[c]) } // 2D
+
+Array.prototype.transpose = function () { // 2D
+    let c = this[0].length
+    return rng(c).map(i => this.column(i))
+}
+
+Array.prototype.flipV = function () { // 2D
+    return this.slice().reverse()
+}
+
+Array.prototype.flipH = function () { // 2D
+    return this.map(row => row.slice().reverse())
+}
+
+Array.prototype.push2D = function (that) { // 2D
+    assert(this.length === that.length)
+    this.forEach((row, i) => {
+        row.push(...that[i])
+    })
+    return this
+}
+
+Array.prototype.allSymetries = function () { // 2D
+    let sym = [this, this.flipH(), this.flipV(), this.flipV().flipH()]
+    let sym2 = sym.map(x => x.transpose())
+    return [...sym, ...sym2]
+}
+
+Array.prototype.bounds2D = function () {
+    let left = this.map(([c, r]) => c).min()
+    let right = this.map(([c, r]) => c).max()
+    let top = this.map(([c, r]) => r).min()
+    let bottom = this.map(([c, r]) => r).max()
+    return { left, right, top, bottom }
+}
+
+Array.prototype.normalize2D = function () {
+    let left = this.map(([c, r]) => c).min()
+    let top = this.map(([c, r]) => r).min()
+    this.forEach(([c, r], i) => elves[i] = [c - left, r - top])
+}
+
+
     
 // ============ Graph ============
 
