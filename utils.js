@@ -417,6 +417,11 @@ Array.prototype.allSymetries = function () { // 2D
     return [...sym, ...sym2]
 }
 
+Array.prototype.trimBorder = function () { // 2D
+    let rows = this.slice(1,-1)
+    return rows.map(row => row.slice(1,-1))
+}
+
 Array.prototype.bounds2D = function () {
     let left = this.map(([c, r]) => c).min()
     let right = this.map(([c, r]) => c).max()
