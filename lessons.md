@@ -31,3 +31,7 @@ If a search problem has <100000 possible states, bfs may work better than dfs --
 use MiniZinc for constraint problems
 
 if you have the right data structure / base class ... a medium problem should execute the first time
+
+problems that involve adding/removing things from a ring can use a double linked list data structure
+with a map to find each node ... see 2020 day 22. If you use a linear array things get slow if you have 
+a large number of items in your ring.
