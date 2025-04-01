@@ -91,7 +91,24 @@ Map.prototype.countBy = function (values, fieldOrFn) {
     return this
 }
 
+Map.prototype.log = function () {
+    let text = ''
+    for (let [key, value] of this.entries()) {
+        if (value instanceof Set) {
+            value = [...value]
+        }
+        text += `${sfy(key)}: ${sfy(value)}\n`
+    }
+    log(text)
+    return this
+}
+
 // ============ Set extensions ============
+
+Set.prototype.log = function () {
+    log(sfy([...this]))
+    return this
+}
 
 Set.prototype._add = function (arr) { arr.forEach(x => this.add(x)) }
 
