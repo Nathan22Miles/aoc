@@ -490,6 +490,15 @@ class Graph {
         }
     }
 
+    /**
+     * Returns:
+     *      path: [], 
+     *      totalCost: total cost of path from start to end
+     *      distances: distance from start to each vertex.
+     *          However, it stops looking when it finds 'end', so if you want distances to all vertices
+     *          make sure end is a vertex label that is not in the graph.
+     */
+
     findShortestPath(start, end) {
         start = start.toString()
         end = end.toString()
@@ -541,6 +550,7 @@ class Graph {
             }
         }
 
+        // no path found. Distance are from start.
         return { path: [], totalCost: Infinity, distances }
     }
 
