@@ -35,3 +35,5 @@ if you have the right data structure / base class ... a medium problem should ex
 problems that involve adding/removing things from a ring can use a double linked list data structure
 with a map to find each node ... see 2020 day 22. If you use a linear array things get slow if you have 
 a large number of items in your ring.
+
+If you need to calculate sums of many slices of an array first calc prefixSums for the array (2019 day 16)
