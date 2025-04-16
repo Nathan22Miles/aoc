@@ -664,7 +664,7 @@ class PriorityQueue {
 }
 
 class Maze {
-    constructor(data, { addBorder = false, borderChar = '.' } = {}) {
+    constructor(data, { addBorder = false, borderChar = '.', wallChar = '#' } = {}) {
         this.data = data
         this.rows = data.split('\n')
 
@@ -678,6 +678,7 @@ class Maze {
         this.r = this.rows.length
         this.c = this.rows[0].length
         this.m = this.rows.join('').split('')
+        this.wallChar = wallChar
     }
 
     get S() { return this.find('S') }
@@ -693,7 +694,7 @@ class Maze {
         return rng(c, m.length - c)
     }
 
-    get ps() { return rng(this.m.length).filter(p => this.m[p] !== '#') }
+    get ps() { return rng(this.m.length).filter(p => this.m[p] !== this.wallChar) }
 
     neighbors = (pList, steps) => {
         if (!Array.isArray(pList)) pList = [pList]
@@ -703,7 +704,7 @@ class Maze {
         for (let p of pList) {
             for (let d of [-this.c, this.c, -1, 1]) {
                 let np = p + d
-                if (this.m[np] !== '#') {
+                if (this.m[np] !== this.wallChar) {
                     result.add(np)
                 }
             }
@@ -727,16 +728,16 @@ class Maze {
         }
     }
 
-    fr = (p) => { return this.m[p] !== '#' }
+    fr = (p) => { return this.m[p] !== this.wallChar }
 
     allowedDirs = (p, disallowed = []) => {
         let { m, c } = this
         let allowed = []
-        if (m[p] === '#') return allowed
+        if (m[p] === this.wallChar) return allowed
         for (let d of [-c, c, -1, 1]) {
             if (disallowed.includes(d)) continue
             let np = p + d
-            if (m[np] !== '#') allowed.push(d)
+            if (m[np] !== this.wallChar) allowed.push(d)
         }
         return allowed
     }

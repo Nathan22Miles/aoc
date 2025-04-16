@@ -23,15 +23,9 @@ let data = fs.readFileSync('data.txt', 'utf8')
 
 // day 5, 9
 
-
-
 let inputs = []
 let inp = 0
 let outputs = []
-
-// north(1), south(2), west(3), and east(4)
-
-
 
 let dotrace = false
 let traces = []
@@ -58,6 +52,8 @@ function setMem(ip, val) {
 
 let _mem = data.split(',').map(parseIntFn)
 for (let i = 0; i < _mem.length; i++) { setMem(i, _mem[i]) }
+
+setMem(0, 2) // part 2
 
 traceMem = true
 
@@ -139,13 +135,13 @@ function xeq(ip) {
 
             setMem(out, arg1 * arg2)
             return ip + 4
-        case 3:
+        case 3: // input
             out = getArg(ip, modes, 0, true)
             const input = inputs.shift()
             setMem(out, input)
             // trace(`${ip}: input ${fmtArgs(ip, modes, 1)} // [${out}] = ${input}`)
             return ip + 2
-        case 4:
+        case 4: // output
             arg1 = getArg(ip, modes, 0)
             // trace(`${ip}: output ${fmtArgs(ip, modes, 1)} // ${arg1}`)
             outputs.push(arg1)
@@ -207,30 +203,20 @@ function xeq(ip) {
 
 function run() {
     let ip = 0
-    inputs = []
     outputs = []
 
     while (true) {
         ip = xeq(ip)
         if (ip < 0) break
     }
-    let _data = outputs.map(code => String.fromCharCode(code)).join('')
-    log(_data)
-    fs.writeFileSync('output.txt', _data, 'utf8')
-    return _data
+    log(outputs.slice(-1)[0])
 }
 
-let maze = new Maze(run(), { addBorder: true, borderChar: '.', wallChar: '.'})
+inputs = `A,B,A,C,A,B,C,B,C,A
+L,12,R,4,R,4,L,6
+L,12,R,4,R,4,R,12
+L,10,L,6,R,4
+n
+`.split('').map(cc => cc.charCodeAt(0))
 
-log(maze.findJunctions().map(p=>maze.rc(p)).map(([r,c]) => (r-1)*(c-1)).sum())
-
-/*
-wake up: [0] from 1 to 2. 
-Supply commands as inputs. comma separated. NL at end of line. Max line length 20 (not counting NL)
-
-main movement routine. A, B, or C. e.g.: A,B,B,C<newline>
-movement function A: 10,L,8,R,6<newline>
-B
-C
-[yn]<newline> continuous video feed?
- */
+run()
