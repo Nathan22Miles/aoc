@@ -10,9 +10,9 @@ const { clear } = require('console')
 // https://adventofcode.com/2019/day/18
 process.chdir('/Users/nmiles/source/aoc/2019/day18')
 
-let data = fs.readFileSync('data.txt', 'utf8')
+let data = fs.readFileSync('data2.txt', 'utf8')
 let testData = fs.readFileSync('testData.txt', 'utf8')
-data = testData
+// data = testData
 
 let maze = new Maze(data, { addBorder: false })
 
@@ -97,16 +97,16 @@ let graph2 = buildGraph2(graph)
 //     node = current doorKey or door
 //     keys = keys collected so far (integer encoding)
 
-function makeId(mm, steps, node, keys) {
-    return `${pad(mm, 2, '0')}_${pad(steps, 6, '0')}_${node}_${keys}`
+function makeId(mm, steps, nodes, keys) {
+    return `${pad(mm, 2, '0')}_${pad(steps, 6, '0')}_${nodes.join('')}_${keys}`
 }
 
 function splitId(id) {
-    let [mm, steps, node, keys] = id.split('_')
+    let [mm, steps, nodes, keys] = id.split('_')
     mm = parseInt(mm)
     steps = parseInt(steps)
     keys = parseInt(keys)
-    return { mm, steps, node, keys }
+    return { mm, steps, nodes: nodes.split(''), keys }
 }
 
 let minDist = new Map() // `${node}_${keys}` => min distance
@@ -121,33 +121,39 @@ class Element {
     // return [Element] - elements reachable next round from this element.
     nexts() {
         let ns = []
-        let { mm, steps, node, keys } = splitId(this.id)
+        let { mm, steps, nodes, keys } = splitId(this.id)
 
-        for (let [next, dist] of (graph2.get(node) || [])) {
-            // let dist = graph2.get(node).get(next)
-            let _mm = mm
-            let _keys = keys
+        for (let i=0; i<4; ++i) {
+            let node = nodes[i]
+            let _nodes = nodes.slice()
+            
+            for (let [next, dist] of (graph2.get(node) || [])) {
+                _nodes[i] = next
+                let _mm = mm
+                let _keys = keys
 
-            if (next >= 'a' && next <= 'z') {
-                if ((keyBit.get(next) & keys) === 0) {
-                    --_mm
-                    _keys = _keys | keyBit.get(next)
+                if (next >= 'a' && next <= 'z') {
+                    if ((keyBit.get(next) & keys) === 0) {
+                        --_mm
+                        _keys = _keys | keyBit.get(next)
+                    }
                 }
-            }
-            else if (next >= 'A' && next <= 'Z') {
-                if ((keyBit.get(next) & keys) === 0) continue
-            } else if (next === '@') {
-            }
+                else if (next >= 'A' && next <= 'Z') {
+                    if ((keyBit.get(next) & keys) === 0) continue
+                } else if (next >= '1' && next <= '4') {
+                } else { assert(false)}
 
-            let mdKey = `${next}_${_keys}`
-            let md = minDist.get(mdKey) ?? Infinity
-            if (steps + dist >= md) continue
-            minDist.set(mdKey, steps + dist)
+                let mdKey = `${_nodes.join('')}_${_keys}`
+                let md = minDist.get(mdKey) ?? Infinity
+                if (steps + dist >= md) continue
+                minDist.set(mdKey, steps + dist)
 
-            ns.push(new Element(makeId(_mm, steps + dist, next, _keys)))
+                let id = makeId(_mm, steps + dist, _nodes, _keys)
+                // log(id)
+                ns.push(new Element(id))
+            }
         }
-
-        // minDist.log()
+        
         return ns
     }
 
@@ -189,7 +195,7 @@ function runBFS(initialElement, breadth) {
     log('failed')
 }
 
-// 136
-let element = new Element(makeId(keys.size, 0, '@', 0))
+let element = new Element(makeId(keys.size, 0, '1234'.split(''), 0))
 
+// 72
 log(runBFS(element, 100000))
